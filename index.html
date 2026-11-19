@@ -166,7 +166,7 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
 .calc .k{font-size:.78rem;color:var(--muted)}
 .calc .fx{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);overflow-wrap:anywhere}
 nav.tabs svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-right:6px}
-nav.tabs a{padding:8px 12px}
+nav.tabs a{padding:8px 12px;flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center}
 .tile .c{overflow-wrap:anywhere;word-break:break-word;line-height:1.3}
 .tile{min-height:68px;padding:10px 10px 9px}
 .slots{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
@@ -201,7 +201,8 @@ details.board-group .gc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;j
 .savebar button{background:var(--surface);color:var(--ink);border-color:var(--surface);font-weight:600}
 .empty-q{color:var(--muted);font-size:.9rem;padding:12px;border:1px dashed var(--line);border-radius:10px;text-align:center}
 body:not(.is-admin) .admin-only{display:none!important}
-.userbox{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.85rem}
+.userbox{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;font-size:.85rem;margin-left:auto}
+.brand{align-items:center}
 .userbox .who{display:flex;flex-direction:column;line-height:1.2;text-align:right}
 .userbox .who b{font-weight:600}
 .userbox .who span{color:var(--muted);font-size:.78rem}
@@ -453,8 +454,8 @@ table.users select{width:auto;padding:4px 8px}
     </div>
     <div class="panel">
       <h3>รายชื่อผู้ใช้</h3>
-      <div class="tablewrap"><table class="users"><thead><tr><th>รหัสพนักงาน</th><th>ชื่อ</th><th>ระดับ</th><th>ชื่อตำแหน่ง</th><th>สิทธิ์</th><th>สถานะ</th></tr></thead><tbody id="userBody"></tbody></table></div>
-      <p class="hint">ถ้าช่างลืม PIN: ปิดใช้งานบัญชีเดิม แล้วลบบัญชีใน Firebase Console (Authentication) ก่อนสร้างบัญชีใหม่ด้วยรหัสพนักงานเดิม</p>
+      <div class="tablewrap"><table class="users"><thead><tr><th>รหัสพนักงาน</th><th>ชื่อ</th><th>ระดับ</th><th>ชื่อตำแหน่ง</th><th>สิทธิ์</th><th>สถานะ</th><th></th></tr></thead><tbody id="userBody"></tbody></table></div>
+      <p class="hint">ลบผู้ใช้แล้ว ผู้นั้นจะเข้าระบบไม่ได้อีก ประวัติการตรวจและการนับที่เคยบันทึกยังอยู่ครบ · ถ้าจะสร้างบัญชีใหม่ด้วยรหัสพนักงานเดิม (เช่น ลืม PIN) ต้องลบบัญชีเดิมใน Firebase Console → Authentication ด้วย</p>
     </div>
     <details class="panel">
       <summary><h3 style="display:inline">นำเข้าข้อมูลจากแอปเดิม</h3></summary>
@@ -1219,7 +1220,8 @@ function renderUsers(){const us=[...(S.users||[])].sort((a,b)=>String(a.grade||'
     <td><select data-ugrade="${esc(u.id)}" aria-label="ระดับของ ${esc(u.name)}">${gradeOpts(u.grade,me?ADMIN_GRADES:GRADES)}</select></td>
     <td><input type="text" data-upos="${esc(u.id)}" value="${esc(u.position||'')}" placeholder="กรอกชื่อตำแหน่ง" aria-label="ชื่อตำแหน่งของ ${esc(u.name)}" style="min-width:150px"></td>
     <td><span class="pill ${u.role==='admin'?'good':'mute'}">${u.role==='admin'?'แอดมิน':'ผู้ใช้งาน'}</span></td>
-    <td>${me?'<span class="pill good">ใช้งาน</span>':`<button class="small${u.active?'':' danger'}" type="button" data-uact="${esc(u.id)}">${u.active?'ใช้งาน · กดเพื่อปิด':'ปิดใช้งาน · กดเพื่อเปิด'}</button>`}</td></tr>`}).join(''):`<tr><td colspan="6" class="empty">ยังไม่มีผู้ใช้</td></tr>`}
+    <td>${me?'<span class="pill good">ใช้งาน</span>':`<button class="small${u.active?'':' danger'}" type="button" data-uact="${esc(u.id)}">${u.active?'ใช้งาน · กดเพื่อปิด':'ปิดใช้งาน · กดเพื่อเปิด'}</button>`}</td>
+    <td>${me?'':`<button class="small danger" type="button" data-udel="${esc(u.id)}">ลบ</button>`}</td></tr>`}).join(''):`<tr><td colspan="7" class="empty">ยังไม่มีผู้ใช้</td></tr>`}
 $('userBody').addEventListener('change',e=>{
   const s=e.target.closest('[data-ugrade]');
   if(s){const u=(S.users||[]).find(x=>x.id===s.dataset.ugrade);if(!u)return;const g=s.value,role=roleOf(g);
@@ -1241,6 +1243,9 @@ $('userForm').addEventListener('submit',e=>{e.preventDefault();const emp=$('uEmp
     $('userForm').reset();$('uGrade').innerHTML=gradeOpts('')},'สร้างบัญชี '+name+' แล้ว · แจ้งรหัสพนักงานและ PIN ให้ผู้ใช้')});
 
 $('uGrade').innerHTML=gradeOpts('');
+$('userBody').addEventListener('click',e=>{const b=e.target.closest('[data-udel]');if(!b)return;const u=(S.users||[]).find(x=>x.id===b.dataset.udel);if(!u)return;
+  if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='กดอีกครั้งเพื่อลบ '+u.name;setTimeout(()=>{if(b.isConnected){b.dataset.armed='';b.textContent='ลบ'}},5000);return}
+  run(b,async()=>{await S.db.doc('users/'+u.id).delete()},'ลบผู้ใช้ '+u.name+' แล้ว · ประวัติที่บันทึกไว้ยังอยู่')});
 /* change own PIN */
 $('pinBtn').addEventListener('click',()=>{['pinOld','pinNew','pinNew2'].forEach(id=>$(id).value='');$('pinScrim').hidden=false;setTimeout(()=>$('pinOld').focus(),0)});
 $('pinClose').addEventListener('click',()=>{$('pinScrim').hidden=true});
