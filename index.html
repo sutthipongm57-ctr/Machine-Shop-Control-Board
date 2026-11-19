@@ -365,7 +365,7 @@ table.users select{width:auto;padding:4px 8px}
       </div>
       <label class="f" id="matNoteWrap" hidden>รายละเอียดที่ผิดปกติ<input type="text" id="matNote"></label>
       <label class="chk" style="align-self:flex-start"><input type="checkbox" id="battOk">แบตเตอรี่สว่านเสียบชาร์จที่แท่นแล้ว</label>
-      <label class="chk" style="align-self:flex-start"><input type="checkbox" id="areaOk">พื้นที่สะอาด ปิดไฟ ปิดประตูแล้ว</label>
+      <label class="chk" style="align-self:flex-start"><input type="checkbox" id="areaOk">พื้นที่สะอาด</label>
     </div></div>
 
     <div class="step" id="st4"><span class="num">4</span><div>
@@ -434,7 +434,7 @@ table.users select{width:auto;padding:4px 8px}
   <section class="tab admin-only" id="tab-users" hidden>
     <div>
       <h2>ผู้ใช้งาน</h2>
-      <p class="lead">สร้างบัญชีให้ช่างด้วยรหัสพนักงานและ PIN 6 หลัก ช่าง (Technician) ตรวจก่อนกลับ นับสต็อก รับเข้า-เบิกออก และแจ้งของหายหรือชำรุดได้ ส่วนหัวหน้า (Admin) ทำได้ทุกอย่าง รวมถึงแก้รายการ ลบประวัติ และจัดการผู้ใช้</p>
+      <p class="lead">สร้างบัญชีด้วยรหัสพนักงานและ PIN 6 หลัก สิทธิ์กำหนดตามระดับตำแหน่ง (เลขน้อย = ตำแหน่งสูง): <b>G1–G5 เป็นแอดมิน</b> ทำได้ทุกอย่าง รวมถึงแก้รายการ ลบประวัติ และจัดการผู้ใช้ · <b>G6–G8 เป็นผู้ใช้งานทั่วไป</b> ตรวจก่อนกลับ นับสต็อก รับเข้า-เบิกออก และแจ้งของหายหรือชำรุดได้</p>
     </div>
     <div class="panel">
       <h3>เพิ่มผู้ใช้</h3>
@@ -445,14 +445,15 @@ table.users select{width:auto;padding:4px 8px}
         </div>
         <div class="row">
           <label class="f">PIN เริ่มต้น (6 หลัก)<input type="password" id="uPin" class="pinin" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required autocomplete="new-password"></label>
-          <label class="f">สิทธิ์<select id="uRole"><option value="tech">ช่าง (Technician)</option><option value="admin">หัวหน้า (Admin)</option></select></label>
+          <label class="f" style="flex:0 1 160px">ระดับ<select id="uGrade"></select></label>
+          <label class="f">ชื่อตำแหน่ง<input type="text" id="uPos" placeholder="เช่น Technician, Supervisor"></label>
         </div>
         <div class="row"><button class="primary" type="submit" id="uSubmit">สร้างบัญชี</button></div>
       </form>
     </div>
     <div class="panel">
       <h3>รายชื่อผู้ใช้</h3>
-      <div class="tablewrap"><table class="users"><thead><tr><th>รหัสพนักงาน</th><th>ชื่อ</th><th>สิทธิ์</th><th>สถานะ</th></tr></thead><tbody id="userBody"></tbody></table></div>
+      <div class="tablewrap"><table class="users"><thead><tr><th>รหัสพนักงาน</th><th>ชื่อ</th><th>ระดับ</th><th>ชื่อตำแหน่ง</th><th>สิทธิ์</th><th>สถานะ</th></tr></thead><tbody id="userBody"></tbody></table></div>
       <p class="hint">ถ้าช่างลืม PIN: ปิดใช้งานบัญชีเดิม แล้วลบบัญชีใน Firebase Console (Authentication) ก่อนสร้างบัญชีใหม่ด้วยรหัสพนักงานเดิม</p>
     </div>
     <details class="panel">
@@ -1165,6 +1166,8 @@ function setupView(){
   <form id="setupForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="off">
     <label class="f">รหัสพนักงาน<input type="text" id="sEmp" required autocapitalize="characters"></label>
     <label class="f">ชื่อที่แสดง<input type="text" id="sName" required></label>
+    <label class="f">ระดับ (แอดมินต้องเป็น G1–G5)<select id="sGrade">${['G1','G2','G3','G4','G5'].map(g=>`<option${g==='G5'?' selected':''}>${g}</option>`).join('')}</select></label>
+    <label class="f">ชื่อตำแหน่ง<input type="text" id="sPos"></label>
     <label class="f">PIN (ตัวเลข 6 หลัก)<input type="password" id="sPin" class="pinin" inputmode="numeric" maxlength="6" required autocomplete="new-password"></label>
     <label class="f">ยืนยัน PIN<input type="password" id="sPin2" class="pinin" inputmode="numeric" maxlength="6" required autocomplete="new-password"></label>
     <p class="err" id="sErr"></p>
@@ -1177,7 +1180,7 @@ function setupView(){
     $('sBtn').disabled=true;$('sErr').textContent='';
     try{S.bootstrapping={emp,name};const cred=await AUTH.createUserWithEmailAndPassword(empEmail(emp),pin);
       const db=FB.firestore(),b=db.batch(),now=new Date().toISOString();
-      b.set(db.doc('users/'+cred.user.uid),{empId:emp,name,role:'admin',active:true,createdAt:now});
+      b.set(db.doc('users/'+cred.user.uid),{empId:emp,name,grade:$('sGrade').value,position:$('sPos').value.trim(),role:'admin',active:true,createdAt:now});
       b.set(db.doc('config/bootstrap'),{by:cred.user.uid,at:now});
       await b.commit();S.bootstrapping=null;store.set('msc:emp',emp);startSession(cred.user)}
     catch(err){S.bootstrapping=null;$('sErr').textContent=authErr(err);$('sBtn').disabled=false}});
@@ -1194,7 +1197,7 @@ async function startSession(user){
   stopSession();
   S.db=db;S.me={uid:user.uid,empId:p.empId,name:p.name,role:p.role};S.isAdmin=p.role==='admin';S.canWrite=true;
   document.body.classList.toggle('is-admin',S.isAdmin);
-  $('whoName').textContent=p.name;$('whoRole').textContent=(S.isAdmin?'หัวหน้า':'ช่าง')+' · '+p.empId;['whoBox','pinBtn','logoutBtn'].forEach(id=>$(id).hidden=false);
+  $('whoName').textContent=p.name;$('whoRole').textContent=[p.position||'',p.grade||'',p.empId].filter(Boolean).join(' · ');['whoBox','pinBtn','logoutBtn'].forEach(id=>$(id).hidden=false);
   ['cName','countBy','kBy'].forEach(id=>$(id).value=p.name);
   $('authScreen').hidden=true;show((location.hash||'').slice(1));
   const onErr=e=>{toast(e&&e.code==='permission-denied'?'ไม่มีสิทธิ์อ่านข้อมูล':'เชื่อมต่อฐานข้อมูลไม่ได้ ลองรีโหลดหน้า')};
@@ -1203,30 +1206,41 @@ async function startSession(user){
   unsubs.push(db.doc('config/machines').onSnapshot(d=>{S.models=d.exists?{...d.data()}:{};applyModels()},onErr));
   unsubs.push(db.collection('stock').onSnapshot(s=>{S.stock=s.docs.map(d=>({id:d.id,...d.data()}));S.loadedStock=true;renderStock()},onErr));
   unsubs.push(db.collection('moves').orderBy('ts','desc').limit(1000).onSnapshot(s=>{S.moves=s.docs.map(d=>({id:d.id,...d.data()}));if(S.ksel)renderKSheet()},onErr));
-  unsubs.push(db.doc('users/'+user.uid).onSnapshot(d=>{const q=d.exists?d.data():null;if(!q||q.active!==true||q.role!==S.me.role){AUTH.signOut()}},()=>{}));
+  unsubs.push(db.doc('users/'+user.uid).onSnapshot(d=>{const q=d.exists?d.data():null;if(!q||q.active!==true||q.role!==S.me.role){AUTH.signOut();return}$('whoRole').textContent=[q.position||'',q.grade||'',q.empId].filter(Boolean).join(' · ')},()=>{}));
   if(S.isAdmin)unsubs.push(db.collection('users').onSnapshot(s=>{S.users=s.docs.map(d=>({id:d.id,...d.data()}));renderUsers()},onErr));
 }
 
 /* users admin */
-const ROLE_TXT={tech:'ช่าง',admin:'หัวหน้า'};
-function renderUsers(){const us=[...(S.users||[])].sort((a,b)=>String(a.empId).localeCompare(String(b.empId),undefined,{numeric:true}));
-  $('userBody').innerHTML=us.length?us.map(u=>`<tr><td class="code">${esc(u.empId)}</td><td>${esc(u.name)}${u.id===S.me.uid?' <span class="pill mute">คุณ</span>':''}</td>
-    <td><select data-urole="${esc(u.id)}" ${u.id===S.me.uid?'disabled':''} aria-label="สิทธิ์ของ ${esc(u.name)}"><option value="tech"${u.role==='tech'?' selected':''}>ช่าง</option><option value="admin"${u.role==='admin'?' selected':''}>หัวหน้า</option></select></td>
-    <td>${u.id===S.me.uid?'<span class="pill good">ใช้งาน</span>':`<button class="small${u.active?'':' danger'}" type="button" data-uact="${esc(u.id)}">${u.active?'ใช้งาน · กดเพื่อปิด':'ปิดใช้งาน · กดเพื่อเปิด'}</button>`}</td></tr>`).join(''):`<tr><td colspan="4" class="empty">ยังไม่มีผู้ใช้</td></tr>`}
-$('userBody').addEventListener('change',e=>{const s=e.target.closest('[data-urole]');if(!s)return;const u=(S.users||[]).find(x=>x.id===s.dataset.urole);if(!u)return;
-  run(s,async()=>{await S.db.doc('users/'+u.id).update({role:s.value})},'เปลี่ยนสิทธิ์ '+u.name+' เป็น'+ROLE_TXT[s.value]+'แล้ว')});
+const GRADES=['G1','G2','G3','G4','G5','G6','G7','G8'],ADMIN_GRADES=['G1','G2','G3','G4','G5'];
+const roleOf=g=>ADMIN_GRADES.includes(g)?'admin':'tech';
+const gradeOpts=(sel,list)=>(sel&&!(list||GRADES).includes(sel)?'':`<option value="" disabled${sel?'':' selected'}>— เลือก —</option>`)+(list||GRADES).map(g=>`<option value="${g}"${g===sel?' selected':''}>${g}${ADMIN_GRADES.includes(g)?' · แอดมิน':''}</option>`).join('');
+function renderUsers(){const us=[...(S.users||[])].sort((a,b)=>String(a.grade||'G9').localeCompare(String(b.grade||'G9'))||String(a.empId).localeCompare(String(b.empId),undefined,{numeric:true}));
+  $('userBody').innerHTML=us.length?us.map(u=>{const me=u.id===S.me.uid;return `<tr><td class="code">${esc(u.empId)}</td><td>${esc(u.name)}${me?' <span class="pill mute">คุณ</span>':''}</td>
+    <td><select data-ugrade="${esc(u.id)}" aria-label="ระดับของ ${esc(u.name)}">${gradeOpts(u.grade,me?ADMIN_GRADES:GRADES)}</select></td>
+    <td><input type="text" data-upos="${esc(u.id)}" value="${esc(u.position||'')}" placeholder="กรอกชื่อตำแหน่ง" aria-label="ชื่อตำแหน่งของ ${esc(u.name)}" style="min-width:150px"></td>
+    <td><span class="pill ${u.role==='admin'?'good':'mute'}">${u.role==='admin'?'แอดมิน':'ผู้ใช้งาน'}</span></td>
+    <td>${me?'<span class="pill good">ใช้งาน</span>':`<button class="small${u.active?'':' danger'}" type="button" data-uact="${esc(u.id)}">${u.active?'ใช้งาน · กดเพื่อปิด':'ปิดใช้งาน · กดเพื่อเปิด'}</button>`}</td></tr>`}).join(''):`<tr><td colspan="6" class="empty">ยังไม่มีผู้ใช้</td></tr>`}
+$('userBody').addEventListener('change',e=>{
+  const s=e.target.closest('[data-ugrade]');
+  if(s){const u=(S.users||[]).find(x=>x.id===s.dataset.ugrade);if(!u)return;const g=s.value,role=roleOf(g);
+    run(s,async()=>{await S.db.doc('users/'+u.id).update({grade:g,role})},u.name+' เป็น '+g+(role!==u.role?(role==='admin'?' · ได้สิทธิ์แอดมิน':' · เป็นผู้ใช้งานทั่วไป'):''));return}
+  const t=e.target.closest('[data-upos]');
+  if(t){const u=(S.users||[]).find(x=>x.id===t.dataset.upos);if(!u||t.value.trim()===(u.position||''))return;
+    run(t,async()=>{await S.db.doc('users/'+u.id).update({position:t.value.trim()})},'บันทึกชื่อตำแหน่งของ '+u.name+' แล้ว')}});
 $('userBody').addEventListener('click',e=>{const b=e.target.closest('[data-uact]');if(!b)return;const u=(S.users||[]).find(x=>x.id===b.dataset.uact);if(!u)return;
   run(b,async()=>{await S.db.doc('users/'+u.id).update({active:!u.active})},(u.active?'ปิดใช้งาน ':'เปิดใช้งาน ')+u.name+' แล้ว')});
-$('userForm').addEventListener('submit',e=>{e.preventDefault();const emp=$('uEmp').value.trim(),name=$('uName').value.trim(),pin=$('uPin').value.trim(),role=$('uRole').value;
+$('userForm').addEventListener('submit',e=>{e.preventDefault();const emp=$('uEmp').value.trim(),name=$('uName').value.trim(),pin=$('uPin').value.trim(),grade=$('uGrade').value,position=$('uPos').value.trim(),role=roleOf(grade);
   if(!emp||!name){toast('ใส่รหัสพนักงานและชื่อ');return}
+  if(!GRADES.includes(grade)){toast('เลือกระดับ G1–G8');$('uGrade').focus();return}
   if(!pinOk(pin)){toast('PIN ต้องเป็นตัวเลข 6 หลัก');$('uPin').focus();return}
   if((S.users||[]).some(u=>String(u.empId).toLowerCase()===emp.toLowerCase())){toast('รหัสพนักงาน '+emp+' มีบัญชีอยู่แล้ว');return}
   run($('uSubmit'),async()=>{const sec=firebase.apps.find(a=>a.name==='secondary')||firebase.initializeApp(window.FIREBASE_CONFIG,'secondary');
     let cred;try{cred=await sec.auth().createUserWithEmailAndPassword(empEmail(emp),pin)}catch(err){toast(authErr(err));throw {handled:true}}
     await sec.auth().signOut();
-    await S.db.doc('users/'+cred.user.uid).set({empId:emp,name,role,active:true,createdAt:new Date().toISOString(),createdBy:S.me.uid});
-    $('userForm').reset()},'สร้างบัญชี '+name+' แล้ว · แจ้งรหัสพนักงานและ PIN ให้ผู้ใช้')});
+    await S.db.doc('users/'+cred.user.uid).set({empId:emp,name,grade,position,role,active:true,createdAt:new Date().toISOString(),createdBy:S.me.uid});
+    $('userForm').reset();$('uGrade').innerHTML=gradeOpts('')},'สร้างบัญชี '+name+' แล้ว · แจ้งรหัสพนักงานและ PIN ให้ผู้ใช้')});
 
+$('uGrade').innerHTML=gradeOpts('');
 /* change own PIN */
 $('pinBtn').addEventListener('click',()=>{['pinOld','pinNew','pinNew2'].forEach(id=>$(id).value='');$('pinScrim').hidden=false;setTimeout(()=>$('pinOld').focus(),0)});
 $('pinClose').addEventListener('click',()=>{$('pinScrim').hidden=true});

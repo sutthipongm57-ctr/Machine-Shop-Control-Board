@@ -2,7 +2,8 @@ rules_version = '2';
 
 // Machine Shop Control Board — Firestore security rules
 // - Only signed-in, active users can read anything.
-// - Technicians: closing checks, stock counts / receive / issue, report tool missing / damaged / found.
+// - Users are graded G1-G8 (lower number = higher position). G1-G5 are admins, G6-G8 are regular users.
+// - Regular users: closing checks, stock counts / receive / issue, report tool missing / damaged / found.
 // - Admins: everything, including tool and stock setup, history edits and user management.
 // - The very first admin is created once from the setup screen (config/bootstrap).
 service cloud.firestore {
@@ -17,6 +18,12 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
     }
     function bootstrapPath() { return /databases/$(database)/documents/config/bootstrap; }
+    // role must match grade: G1-G5 -> admin, G6-G8 -> tech
+    function gradeMatchesRole(d) {
+      return d.grade in ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8']
+        && ((d.grade in ['G1', 'G2', 'G3', 'G4', 'G5']) == (d.role == 'admin'))
+        && d.role in ['admin', 'tech'];
+    }
 
     // One-time setup marker. Anyone may check whether setup has been done.
     match /config/bootstrap {
@@ -38,15 +45,18 @@ service cloud.firestore {
       // Lets a signed-in user see their own profile even when inactive, so the app can say so.
       allow get: if signedIn() && request.auth.uid == uid;
       allow list: if isAdmin();
-      allow create: if isAdmin()
+      allow create: if gradeMatchesRole(request.resource.data) && (isAdmin()
         || (signedIn() && request.auth.uid == uid
             && request.resource.data.role == 'admin'
             && request.resource.data.active == true
             && !exists(bootstrapPath())
-            && existsAfter(bootstrapPath()));
-      // Admins cannot demote or deactivate themselves (prevents locking everyone out).
+            && existsAfter(bootstrapPath())));
+      // Admins cannot demote or deactivate themselves (prevents locking everyone out):
+      // on their own record they may change name, position and grade, but must stay G1-G5 / admin.
       allow update: if isAdmin()
-        && (request.auth.uid != uid || onlyChanges(['name']));
+        && (!('grade' in request.resource.data) || gradeMatchesRole(request.resource.data))
+        && (request.auth.uid != uid
+            || (onlyChanges(['name', 'position', 'grade']) && request.resource.data.role == 'admin'));
       allow delete: if isAdmin() && request.auth.uid != uid;
     }
 
