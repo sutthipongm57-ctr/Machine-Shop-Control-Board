@@ -1,0 +1,1077 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>body{margin:0}[hidden]{display:none!important}</style></head><body>
+<title>Machine Shop Control Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one technician, one evening check. Sticky tab bar; the check is a 4-step column; tools drawn as a shadow board where an empty slot is the signal. */
+:root{
+  --bg:#ECEFEE; --surface:#FAFBFA; --sunk:#E2E6E5; --ink:#1B2124; --muted:#5A6469; --line:#CDD3D2;
+  --accent:#2348A6; --accent-ink:#FFFFFF; --good:#2E7D4F; --warn:#A86E12; --bad:#C2362F; --dmg:#7445A8;
+  --f-display:"Chakra Petch","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111518; --surface:#192024; --sunk:#141A1D; --ink:#E5EAEB; --muted:#97A2A7; --line:#2C353A;
+  --accent:#7E9DEB; --accent-ink:#0D1631; --good:#5FBF87; --warn:#E0A83E; --bad:#EF6A60; --dmg:#B997E8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111518; --surface:#192024; --sunk:#141A1D; --ink:#E5EAEB; --muted:#97A2A7; --line:#2C353A;
+  --accent:#7E9DEB; --accent-ink:#0D1631; --good:#5FBF87; --warn:#E0A83E; --bad:#EF6A60; --dmg:#B997E8; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scrollbar-gutter:stable}
+@supports not (scrollbar-gutter:stable){html{overflow-y:scroll}}
+main{min-height:calc(100vh - 120px)}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:12px 6px}
+.brand h1{font-family:var(--f-display);font-weight:600;font-size:1.25rem;letter-spacing:.01em;margin:0;text-wrap:balance}
+.brand h1 span{color:var(--accent)}
+.brand .date{font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs a{flex:0 0 auto;text-decoration:none;color:var(--muted);font-weight:500;font-size:.9rem;padding:6px 12px;border-radius:6px;white-space:nowrap}
+nav.tabs a:hover{color:var(--ink);background:var(--sunk)}
+nav.tabs a[aria-current="page"]{background:var(--ink);color:var(--surface)}
+nav.tabs a .badge{display:inline-block;min-width:18px;margin-left:4px;padding:0 5px;border-radius:9px;background:var(--bad);color:#fff;font-size:.72rem;text-align:center;line-height:18px}
+main{padding-block:20px 48px}
+section.tab{display:flex;flex-direction:column;gap:20px}
+h2{font-family:var(--f-display);font-weight:600;font-size:1.15rem;margin:0;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:1rem;margin:0}
+.lead{color:var(--muted);margin:4px 0 0;max-width:none}
+.eyebrow{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.row>*{min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+@media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.stat .n{font-family:var(--f-display);font-size:1.9rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat .l{font-size:.85rem;color:var(--muted)}
+.stat.bad .n{color:var(--bad)} .stat.warn .n{color:var(--warn)} .stat.good .n{color:var(--good)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);flex:1 1 160px}
+input[type=text],input[type=search],select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.chk{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);cursor:pointer;font-size:.9rem;color:var(--ink)}
+.chk input{accent-color:var(--accent);width:16px;height:16px}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;font-weight:500}
+button:hover{background:var(--sunk)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.primary:hover{filter:brightness(1.08)}
+button.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,var(--line))}
+button.small{padding:4px 10px;font-size:.85rem}
+button:disabled{opacity:.5;cursor:not-allowed}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:.78rem;font-weight:600;padding:1px 8px;border-radius:20px;white-space:nowrap}
+.pill.good{color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+.pill.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 16%,transparent)}
+.pill.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.pill.mute{color:var(--muted);background:var(--sunk)}
+.code{font-family:var(--f-mono);font-size:.82rem;letter-spacing:.02em}
+.list{display:flex;flex-direction:column}
+.li{display:flex;gap:10px;align-items:baseline;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.li:first-child{border-top:0}
+.li .main{min-width:0;flex:1 1 220px}
+.li .sub{color:var(--muted);font-size:.85rem}
+.empty{color:var(--muted);font-size:.9rem;padding:8px 0}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:8px;font-size:.9rem;z-index:30;max-width:calc(100% - 32px)}
+.banner{border:1px solid color-mix(in srgb,var(--warn) 50%,var(--line));background:color-mix(in srgb,var(--warn) 10%,var(--surface));color:var(--ink);border-radius:8px;padding:10px 14px;font-size:.9rem}
+.bar{height:8px;border-radius:4px;background:var(--sunk);overflow:hidden;flex:1 1 120px;min-width:80px;align-self:center}
+.bar i{display:block;height:100%;background:var(--bad);border-radius:4px}
+.bar.w i{background:var(--warn)}
+
+/* Shadow board */
+.board{display:flex;flex-direction:column;gap:18px}
+.board-group{display:flex;flex-direction:column;gap:8px}
+.board-group header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+.tile{position:relative;text-align:left;display:flex;flex-direction:column;gap:2px;padding:10px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);min-height:74px;color:var(--ink);font-weight:400}
+.tile:hover{background:var(--sunk)}
+.tile .c{font-family:var(--f-mono);font-size:.8rem;font-weight:500}
+.tile .t{font-size:.84rem;line-height:1.3;color:var(--muted)}
+.tile .h{font-size:.78rem;font-weight:600;margin-top:auto}
+.tile.missing{border-style:dashed;border-color:var(--bad);background:repeating-linear-gradient(135deg,transparent 0 7px,color-mix(in srgb,var(--bad) 10%,transparent) 7px 8px)}
+.tile.missing .h{color:var(--bad)}
+.tile.mark-missing{border-color:var(--bad);border-width:2px;background:color-mix(in srgb,var(--bad) 12%,var(--surface))}
+.tile.mark-missing .h{color:var(--bad)}
+.tile.mark-tag{border-style:dashed;border-width:2px;border-color:var(--warn);background:repeating-linear-gradient(135deg,transparent 0 7px,color-mix(in srgb,var(--warn) 11%,transparent) 7px 8px)}
+.tile.mark-tag .h{color:var(--warn)}
+.tile.mark-found{border-color:var(--good);border-width:2px;border-style:solid;background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+.tile.mark-found .h{color:var(--good)}
+.tile.damaged{border-style:dashed;border-color:var(--dmg);background:repeating-linear-gradient(135deg,transparent 0 7px,color-mix(in srgb,var(--dmg) 11%,transparent) 7px 8px)}
+.tile.damaged .h{color:var(--dmg)}
+.tile.mark-dmg{border-color:var(--dmg);border-width:2px;background:color-mix(in srgb,var(--dmg) 13%,var(--surface))}
+.tile.mark-dmg .h{color:var(--dmg)}
+.pill.dmg{color:var(--dmg);background:color-mix(in srgb,var(--dmg) 14%,transparent)}
+.seg #modeDmg i{background:var(--dmg)}
+.seg #modeDmg[aria-pressed="true"]{background:color-mix(in srgb,var(--dmg) 15%,var(--surface));color:var(--ink);font-weight:600}
+.savebar .sv .dmg{color:color-mix(in srgb,var(--dmg) 50%,var(--surface))}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1.5px solid var(--line)}
+.legend i.t{border:1.5px dashed var(--warn)} .legend i.m{border:2px solid var(--bad)} .legend i.p{border:1.5px dashed var(--bad)}
+
+/* Steps */
+.step{display:grid;grid-template-columns:32px 1fr;gap:12px}
+.step .num{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:600;background:var(--sunk);color:var(--ink)}
+.step.done .num{background:var(--good);color:#fff}
+.step>div{min-width:0;display:flex;flex-direction:column;gap:10px}
+.mach{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.mgroup{display:flex;flex-direction:column;gap:8px}
+.mgh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mach .panel{gap:6px;padding:12px 14px}
+.mach .panel.ok{border-color:color-mix(in srgb,var(--good) 55%,var(--line))}
+.mach .panel.skip{opacity:.62}
+.mach .mh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:nowrap;min-height:30px}
+.mach .mh h3{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;line-height:1.3}
+.mach .skipbtn{font-size:.8rem;padding:2px 10px;flex:0 0 auto;white-space:nowrap}
+.mach .skipbtn[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.mach label{display:flex;gap:8px;align-items:flex-start;font-size:.9rem;cursor:pointer}
+.mach input{accent-color:var(--good);width:17px;height:17px;margin-top:3px;flex:0 0 auto}
+.mach .tag{font-size:.72rem;color:var(--bad);font-weight:600}
+
+/* Sheet */
+.scrim{position:fixed;inset:0;background:color-mix(in srgb,#000 40%,transparent);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:min(560px,100%);max-height:88vh;overflow:auto;border-radius:14px 14px 0 0;padding:20px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px;border:1px solid var(--line)}
+@media (min-width:700px){.scrim{align-items:center}.sheet{border-radius:14px}}
+.sheet .head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px;border-radius:8px;background:color-mix(in srgb,var(--bad) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--bad) 35%,var(--line))}
+input[type=number]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0;font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+table.stock{border-collapse:collapse;width:100%;font-size:.9rem;min-width:620px}
+table.stock th,table.stock td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.stock th{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
+table.stock .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.stock tbody tr{cursor:pointer}
+table.stock tbody tr:hover{background:var(--sunk)}
+table.stock tr.crit td:first-child{box-shadow:inset 3px 0 0 var(--bad)}
+table.stock tr.reorder td:first-child{box-shadow:inset 3px 0 0 var(--warn)}
+table.stock .nm{display:block;font-size:.84rem;color:var(--muted)}
+table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:right}
+.gauge{position:relative;height:6px;border-radius:3px;background:var(--sunk);margin-top:4px;min-width:90px}
+.gauge b{position:absolute;inset:0 auto 0 0;border-radius:3px;background:var(--good)}
+.gauge.r b{background:var(--warn)} .gauge.c b{background:var(--bad)}
+.gauge i{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.55}
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.calc:empty{display:none}
+.calc>div{background:var(--bg);padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.calc .v{font-family:var(--f-display);font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums}
+.calc .k{font-size:.78rem;color:var(--muted)}
+.calc .fx{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);overflow-wrap:anywhere}
+nav.tabs svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-right:6px}
+nav.tabs a{padding:8px 12px}
+.tile .c{overflow-wrap:anywhere;word-break:break-word;line-height:1.3}
+.tile{min-height:68px;padding:10px 10px 9px}
+.slots{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
+details.board-group{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:0 12px}
+details.board-group[open]{padding-bottom:12px}
+details.board-group>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 0;min-height:44px}
+details.board-group>summary::-webkit-details-marker{display:none}
+details.board-group .gt{display:flex;align-items:center;gap:8px;min-width:0}
+details.board-group .gt .eyebrow{color:var(--ink)}
+details.board-group .chev{width:14px;height:14px;flex:0 0 auto;fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion:no-preference){details.board-group .chev{transition:transform .15s}}
+details.board-group[open] .chev{transform:rotate(90deg)}
+details.board-group .gc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;font-size:.8rem;color:var(--muted);white-space:nowrap}
+.board{gap:10px}
+.tile .tile-x{display:none}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toolbar input{flex:1 1 200px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface);flex:0 0 auto}
+.seg button{border:0;border-radius:0;padding:9px 14px;background:transparent;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.seg #modeMiss i{background:var(--bad)} .seg #modeTag i{background:var(--warn)}
+.seg #modeMiss[aria-pressed="true"]{background:color-mix(in srgb,var(--bad) 14%,var(--surface));color:var(--ink);font-weight:600}
+.seg #modeTag[aria-pressed="true"]{background:color-mix(in srgb,var(--warn) 16%,var(--surface));color:var(--ink);font-weight:600}
+.hint{font-size:.84rem;color:var(--muted);margin:0}
+@media (max-width:560px){.step{grid-template-columns:1fr;gap:8px}.step .num{width:28px;height:28px;font-size:.9rem}.slots{grid-template-columns:repeat(auto-fill,minmax(112px,1fr))}details.board-group{padding:0 10px}}
+.savebar{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:4;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--ink);color:var(--surface);border-radius:12px;padding:10px 10px 10px 16px;box-shadow:0 8px 24px rgb(0 0 0 / .22)}
+.savebar .sv{display:flex;gap:14px;flex-wrap:wrap;font-size:.88rem}
+.savebar .sv b{font-family:var(--f-display);font-size:1.05rem;margin-right:3px;font-variant-numeric:tabular-nums}
+.savebar .sv .bad{color:color-mix(in srgb,var(--bad) 55%,var(--surface))}
+.savebar .sv .warn{color:color-mix(in srgb,var(--warn) 55%,var(--surface))}
+.savebar button{background:var(--surface);color:var(--ink);border-color:var(--surface);font-weight:600}
+.empty-q{color:var(--muted);font-size:.9rem;padding:12px;border:1px dashed var(--line);border-radius:10px;text-align:center}
+@media (prefers-reduced-motion:no-preference){.tile,button{transition:background-color .12s,border-color .12s}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Machine Shop <span>Control Board</span></h1>
+      <div class="date" id="today"></div>
+    </div>
+    <nav class="tabs" aria-label="เมนู">
+      <a href="#stock" data-tab="stock"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4zm0 0v10l9 4 9-4V7M12 11v10"/></svg>สต็อก <span class="badge" id="badgeReorder" hidden></span></a>
+      <a href="#check" data-tab="check"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>ตรวจก่อนกลับ</a>
+      <a href="#summary" data-tab="summary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6M3 20h18"/></svg>สรุป <span class="badge" id="badgeMissing" hidden></span></a>
+      <a href="#tools" data-tab="tools"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>จัดการบอร์ด</a>
+      <a href="#history" data-tab="history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M3.5 12a8.5 8.5 0 1 0 2.5-6L3.5 8.5M3.5 3.5v5h5"/></svg>ประวัติ</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="banner" id="dbBanner" hidden></div>
+
+  <!-- STOCK -->
+  <section class="tab" id="tab-stock" hidden>
+    <div>
+      <h2>สต็อกเครื่องมือช่าง</h2>
+      <p class="lead">ควบคุมจำนวนเครื่องมือช่างที่ใช้แล้วสึกหรอหรือต้องเปลี่ยน (ดอกสว่าน, end mill, insert, ต๊าป, ใบตัด) เครื่องมือที่ต้องมีขั้นต่ำ (เครื่องมือวัด, ประแจ) และอะไหล่เครื่องจักรที่ต้องมีสำรอง (สายพาน, ลูกปืน) ยอดตรงได้จากการนับจริงเป็นรอบ ไม่ต้องบันทึกทุกครั้งที่หยิบ</p>
+    </div>
+    <div class="stats" id="stockStats"></div>
+
+    <div class="panel" id="orderPanel">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h3>ต้องสั่งซื้อ</h3>
+        <button class="small" type="button" id="copyOrder">คัดลอกรายการสั่งซื้อ</button>
+      </div>
+      <div class="list" id="orderList"></div>
+      <textarea id="orderText" readonly hidden style="font:inherit;font-size:.85rem;width:100%;min-height:120px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px"></textarea>
+    </div>
+
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h3>รายการทั้งหมด</h3>
+        <div class="row" style="flex:1 1 320px;justify-content:flex-end">
+          <label class="f" style="flex:1 1 150px"><input type="text" id="stockSearch" placeholder="ค้นหารหัสหรือชื่อ" aria-label="ค้นหา"></label>
+          <label class="f" style="flex:0 1 200px"><select id="stockCat" aria-label="หมวด"></select></label>
+        </div>
+      </div>
+      <div class="tablewrap"><table class="stock"><thead><tr><th>รายการ</th><th class="num">คงเหลือ</th><th class="num">Safety stock</th><th class="num">จุดสั่งซื้อ</th><th class="num">พอใช้</th><th>สถานะ</th></tr></thead><tbody id="stockBody"></tbody></table></div>
+    </div>
+
+    <details class="panel" id="countPanel">
+      <summary><h3 style="display:inline">นับสต็อกจริง (Cycle count)</h3></summary>
+      <p class="lead" style="margin:0">นับสัปดาห์ละหมวด ใส่จำนวนที่นับได้จริง ช่องที่เว้นว่างจะไม่เปลี่ยน ส่วนต่างจากยอดในระบบจะถูกนับเป็นการใช้งาน และใช้คำนวณอัตราใช้จริง</p>
+      <div class="row">
+        <label class="f" style="flex:0 1 260px">หมวดที่นับ<select id="countCat"></select></label>
+        <label class="f" style="flex:0 1 200px">ผู้นับ<input type="text" id="countBy"></label>
+      </div>
+      <div class="tablewrap"><table class="stock"><thead><tr><th>รายการ</th><th class="num">ยอดในระบบ</th><th class="num">นับได้จริง</th><th>นับล่าสุด</th></tr></thead><tbody id="countBody"></tbody></table></div>
+      <div class="row"><button class="primary" type="button" id="countSave">บันทึกผลนับ</button></div>
+    </details>
+
+    <details class="panel" id="stockFormPanel">
+      <summary><h3 style="display:inline">เพิ่ม / แก้ไขรายการสต็อก</h3></summary>
+      <form id="stockForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="off">
+        <div class="row">
+          <label class="f">รหัส<input type="text" id="kCode" required placeholder="EM-C10"></label>
+          <label class="f" style="flex:2 1 240px">ชื่อและขนาด<input type="text" id="kName" required placeholder="End mill คาร์ไบด์ Ø10 (4 ฟัน)"></label>
+        </div>
+        <div class="row">
+          <label class="f">หมวด<select id="kCat"></select></label>
+          <label class="f" style="flex:0 1 120px">หน่วย<select id="kUnit"></select></label>
+          <label class="f" style="flex:0 1 140px">คงเหลือตอนนี้<input type="number" id="kOnHand" min="0" step="any" value="0"></label>
+        </div>
+        <div class="row" id="kMachRow" hidden>
+          <label class="f">ใช้กับเครื่อง: แบรนด์<select id="kBrand"></select><input type="text" id="kBrandNew" placeholder="พิมพ์แบรนด์ใหม่" hidden></label>
+          <label class="f">รุ่นเครื่อง<select id="kModel"></select><input type="text" id="kModelNew" placeholder="พิมพ์รุ่นใหม่" hidden></label>
+        </div>
+        <div class="row">
+          <label class="f">ใช้เฉลี่ย / เดือน (ไม่รู้ เว้นว่างได้)<input type="number" id="kAvg" min="0" step="any"></label>
+          <label class="f">ใช้สูงสุด / เดือน (ไม่รู้ เว้นว่างได้)<input type="number" id="kMax" min="0" step="any"></label>
+          <label class="f">Lead time (วัน)<input type="number" id="kLead" min="0" step="any" placeholder="สั่งจนของมาถึง"></label>
+        </div>
+        <div class="row">
+          <label class="f">Safety stock
+            <select id="kSsMode"><option value="calc">คำนวณจากการใช้สูงสุด</option><option value="manual">กำหนดเอง (จำนวนขั้นต่ำ)</option></select>
+          </label>
+          <label class="f" id="kSsWrap" hidden>Safety stock (กำหนดเอง)<input type="number" id="kSs" min="0" step="any"></label>
+          <label class="f">สต็อกสูงสุด (ไม่บังคับ)<input type="number" id="kMaxStock" min="0" step="any" placeholder="ใช้คำนวณจำนวนสั่ง"></label>
+        </div>
+        <div class="row">
+          <label class="f">ตำแหน่งจัดเก็บ<input type="text" id="kLoc" placeholder="ตู้เครื่องมือ 1 ลิ้นชัก 2"></label>
+          <label class="f">ผู้ขาย / หมายเหตุ<input type="text" id="kNote"></label>
+        </div>
+        <div class="calc" id="kPreview"></div>
+        <div class="row">
+          <button class="primary" type="submit" id="kSubmit">เพิ่มรายการ</button>
+          <button type="button" id="kCancel" hidden>ยกเลิกการแก้ไข</button>
+        </div>
+      </form>
+    </details>
+  </section>
+
+  <!-- CLOSING CHECK -->
+  <section class="tab" id="tab-check" hidden>
+    <div>
+      <h2>ตรวจก่อนกลับบ้าน</h2>
+      <p class="lead">ช่างคนเดียวทำตอนเย็น ใช้เวลา 2–3 นาที แตะเฉพาะช่องที่ผิดปกติ ช่องที่ไม่ได้แตะถือว่าอยู่ครบ</p>
+      <p class="lead" id="checkDone" hidden></p>
+    </div>
+
+    <div class="step" id="st1"><span class="num">1</span><div>
+      <h3>เครื่องมือบนบอร์ด</h3>
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="แตะช่องเพื่อบันทึกเป็น">
+          <button type="button" id="modeMiss" aria-pressed="true"><i></i>ขาด</button>
+          <button type="button" id="modeTag" aria-pressed="false"><i></i>ยืมอยู่</button>
+          <button type="button" id="modeDmg" aria-pressed="false"><i></i>ชำรุด</button>
+        </div>
+        <input type="search" id="qCheck" placeholder="ค้นหารหัส ชื่อ หรือ S/N" aria-label="ค้นหาเครื่องมือ">
+      </div>
+      <p class="hint">เลือก "ขาด" "ยืมอยู่" หรือ "ชำรุด" แล้วแตะช่องนั้น แตะซ้ำเพื่อยกเลิก · ช่องเส้นประแดง = หายค้าง แตะเมื่อเจอคืน · ช่องเส้นประม่วง = ชำรุดรอซ่อม แตะเมื่อซ่อมแล้ว</p>
+      <div class="board" id="checkBoard"></div>
+    </div></div>
+
+    <div class="step" id="st2"><span class="num">2</span><div>
+      <h3>สภาพเครื่องจักร</h3>
+      <p class="lead" style="margin:0">กด "เปิดใช้วันนี้" เฉพาะเครื่องที่มีคนใช้วันนี้ แล้วติ๊กตามรายการ เครื่องที่ไม่ได้ใช้ข้ามได้เลย</p>
+      <div id="machList" style="display:flex;flex-direction:column;gap:16px"></div>
+    </div></div>
+
+    <div class="step" id="st3"><span class="num">3</span><div>
+      <h3>ชั้นวัสดุและพื้นที่</h3>
+      <p class="lead" style="margin:0">ถ่ายรูปชั้นวัสดุ เทียบกับรูปของเมื่อวาน ดูว่าชิ้นใหญ่หายไปหรือไม่</p>
+      <div class="checks">
+        <label class="chk"><input type="radio" name="mat" id="matOk" value="ok" checked>วัสดุปกติ</label>
+        <label class="chk"><input type="radio" name="mat" id="matBad" value="bad">วัสดุผิดปกติ</label>
+      </div>
+      <label class="f" id="matNoteWrap" hidden>รายละเอียดที่ผิดปกติ<input type="text" id="matNote"></label>
+      <label class="chk" style="align-self:flex-start"><input type="checkbox" id="battOk">แบตเตอรี่สว่านเสียบชาร์จที่แท่นแล้ว</label>
+      <label class="chk" style="align-self:flex-start"><input type="checkbox" id="areaOk">พื้นที่สะอาด ปิดไฟ ปิดประตูแล้ว</label>
+    </div></div>
+
+    <div class="step" id="st4"><span class="num">4</span><div>
+      <h3>สรุปและบันทึก</h3>
+      <div id="checkSummary"></div>
+      <div class="row">
+        <label class="f">ผู้ตรวจ<input type="text" id="cName" required></label>
+        <label class="f">หมายเหตุ / alarm ที่พบ<input type="text" id="cNote" placeholder="เช่น Milling มีเสียงผิดปกติตอนบ่าย"></label>
+      </div>
+      <div class="row"><button class="primary" id="cSubmit" type="button">บันทึกผลตรวจ</button></div>
+    </div></div>
+    <div class="savebar" id="saveBar"><div class="sv" id="saveSv"></div><button type="button" id="goSave">ไปบันทึกผล</button></div>
+  </section>
+
+  <!-- SUMMARY -->
+  <section class="tab" id="tab-summary" hidden>
+    <div>
+      <h2>สรุป 30 วันล่าสุด</h2>
+      <p class="lead">ใช้ตัดสินใจว่าควรล็อกอะไรเพิ่ม ซื้ออะไรสำรอง หรือเครื่องไหนต้องคุยกับผู้ใช้งาน</p>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="grid2">
+      <div class="panel"><h3>ของหายค้างตอนนี้</h3><div class="list" id="sumMissing"></div></div>
+      <div class="panel"><h3>ชำรุดรอซ่อม / เปลี่ยน</h3><div class="list" id="sumDmg"></div></div>
+      <div class="panel"><h3>หายบ่อยที่สุด</h3><div class="list" id="sumFreq"></div></div>
+      <div class="panel"><h3>ยืมนาน (มีป้ายติดกัน 3 วันขึ้นไป)</h3><div class="list" id="sumLong"></div></div>
+      <div class="panel"><h3>เครื่องจักรที่ไม่ผ่านบ่อย</h3><div class="list" id="sumMach"></div></div>
+    </div>
+  </section>
+
+  <!-- TOOLS -->
+  <section class="tab" id="tab-tools" hidden>
+    <div>
+      <h2>จัดการบอร์ดเครื่องมือ</h2>
+      <p class="lead">เพิ่ม แก้ไข หรือลบรายการ แตะช่องเพื่อดูรายละเอียด หรือบันทึกว่าเจอของที่หายแล้ว</p>
+    </div>
+    <input type="search" id="qTools" placeholder="ค้นหารหัส ชื่อ หรือ S/N" aria-label="ค้นหาเครื่องมือ">
+    <div class="board" id="board"></div>
+    <details class="panel" id="addPanel">
+      <summary><h3 style="display:inline">เพิ่ม / แก้ไขรายการเครื่องมือ</h3></summary>
+      <form id="itemForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="off">
+        <div class="row">
+          <label class="f">รหัส<input type="text" id="iCode" required placeholder="VN-04"></label>
+          <label class="f">ชื่อ<input type="text" id="iName" required placeholder="เวอร์เนียร์ 150 มม."></label>
+        </div>
+        <div class="row">
+          <label class="f">หมวด<select id="iCat"></select></label>
+          <label class="f">ตำแหน่งจัดเก็บ<input type="text" id="iLoc" placeholder="Shadow board A"></label>
+        </div>
+        <div class="row" id="iMachRow" hidden>
+          <label class="f">แบรนด์เครื่องจักร<select id="iBrand"></select><input type="text" id="iBrandNew" placeholder="พิมพ์แบรนด์ใหม่ เช่น YAMAZEN" hidden></label>
+          <label class="f">รุ่นเครื่องจักร<select id="iModel"></select><input type="text" id="iModelNew" placeholder="พิมพ์รุ่นใหม่ เช่น JY-2T" hidden></label>
+        </div>
+        <div class="row">
+          <label class="f">Serial no. (ถ้ามี)<input type="text" id="iSerial" placeholder="เช่น S/N บนตัวสว่าน หรือเวอร์เนียร์"></label>
+        </div>
+        <div class="row">
+          <button class="primary" type="submit" id="iSubmit">เพิ่มรายการ</button>
+          <button type="button" id="iCancel" hidden>ยกเลิกการแก้ไข</button>
+        </div>
+      </form>
+    </details>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="tab" id="tab-history" hidden>
+    <div>
+      <h2>ประวัติการตรวจ</h2>
+      <p class="lead">ผลตรวจก่อนกลับย้อนหลัง 60 วัน กด "แก้ไข" เพื่อแก้รายการที่บันทึกผิด หรือลบผลตรวจทั้งรอบ</p>
+    </div>
+    <div class="panel"><div class="list" id="checkHist"></div></div>
+  </section>
+</main>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sTitle">
+    <div class="head">
+      <div><div class="code" id="sCode"></div><h2 id="sTitle"></h2><div class="lead" id="sInfo" style="margin:0"></div></div>
+      <button class="small" id="sClose" type="button">ปิด</button>
+    </div>
+    <div class="row" id="sFoundRow"><button class="primary" id="sDoFound" type="button">เจอแล้ว คืนเข้าบอร์ด</button></div>
+    <div class="row" style="justify-content:space-between">
+      <div class="row">
+        <button class="danger small" id="sDoMissing" type="button">แจ้งของหาย</button>
+        <button class="small" id="sDoDmg" type="button">แจ้งชำรุด</button>
+        <button class="small" id="sEdit" type="button">แก้ไข</button>
+      </div>
+      <button class="danger small" id="sDelete" type="button">ลบรายการ</button>
+    </div>
+    <div class="confirm" id="sConfirm" hidden><span>ลบรายการนี้ออกจากบอร์ดถาวร?</span><button class="danger small" id="sConfirmYes" type="button">ลบ</button><button class="small" id="sConfirmNo" type="button">ไม่ลบ</button></div>
+  </div>
+</div>
+<div class="scrim" id="kScrim" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="kTitle">
+    <div class="head">
+      <div><div class="code" id="kSCode"></div><h2 id="kTitle"></h2><div class="lead" id="kSInfo" style="margin:0"></div></div>
+      <button class="small" id="kClose" type="button">ปิด</button>
+    </div>
+    <div class="calc" id="kSCalc"></div>
+    <div class="row">
+      <label class="f" style="flex:0 1 140px">จำนวน<input type="number" id="kQty" min="0" step="any"></label>
+      <label class="f">โดย<input type="text" id="kBy"></label>
+    </div>
+    <label class="f">หมายเหตุ<input type="text" id="kMoveNote" placeholder="เช่น PO เลขที่ / ใช้กับงาน"></label>
+    <div class="row">
+      <button class="primary" type="button" id="kIn">รับเข้า +</button>
+      <button type="button" id="kOut">เบิกออก −</button>
+      <button type="button" id="kCount">ตั้งยอดตามที่นับ</button>
+    </div>
+    <div id="kUsage"></div>
+    <div><span class="eyebrow">ความเคลื่อนไหวล่าสุด · ลบได้เฉพาะรายการบนสุด</span><div class="list" id="kMoves"></div></div>
+    <div class="row" style="justify-content:space-between">
+      <button class="small" id="kEdit" type="button">แก้ไขค่าตั้ง</button>
+      <button class="danger small" id="kDelete" type="button">ลบรายการ</button>
+    </div>
+    <div class="confirm" id="kConfirm" hidden><span>ลบรายการนี้ออกจากสต็อกถาวร?</span><button class="danger small" id="kConfirmYes" type="button">ลบ</button><button class="small" id="kConfirmNo" type="button">ไม่ลบ</button></div>
+  </div>
+</div>
+<div class="scrim" id="hScrim" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="hTitle">
+    <div class="head">
+      <div><div class="eyebrow">แก้ไขผลตรวจ</div><h2 id="hTitle"></h2></div>
+      <button class="small" id="hClose" type="button">ปิด</button>
+    </div>
+    <label class="f">ผู้ตรวจ<input type="text" id="hChecker"></label>
+    <div id="hMissWrap" style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">บันทึกว่าขาด</span><div class="checks" id="hMiss"></div><span class="lead" style="margin:0;font-size:.84rem">ติ๊กออกถ้าบันทึกผิด ของชิ้นนั้นจะกลับเป็นอยู่ที่บอร์ด</span></div>
+    <div id="hDmgWrap" style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">บันทึกว่าชำรุด</span><div class="checks" id="hDmg"></div></div>
+    <div id="hTagWrap" style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">มีป้ายยืม</span><div class="checks" id="hTag"></div></div>
+    <div id="hFailWrap" style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">เครื่องจักรไม่ผ่าน (ติ๊กออกถ้าผ่านจริง)</span><div class="checks" id="hFail"></div></div>
+    <div class="checks">
+      <label class="chk"><input type="radio" name="hmat" id="hMatOk">วัสดุปกติ</label>
+      <label class="chk"><input type="radio" name="hmat" id="hMatBad">วัสดุผิดปกติ</label>
+    </div>
+    <label class="f">รายละเอียดวัสดุ<input type="text" id="hMatNote"></label>
+    <div class="checks">
+      <label class="chk"><input type="checkbox" id="hBatt">แบตเตอรี่ชาร์จแล้ว</label>
+      <label class="chk"><input type="checkbox" id="hArea">พื้นที่เรียบร้อย</label>
+    </div>
+    <label class="f">หมายเหตุ<input type="text" id="hNote"></label>
+    <div class="row" style="justify-content:space-between">
+      <button class="primary" id="hSave" type="button">บันทึกการแก้ไข</button>
+      <button class="danger small" id="hDelete" type="button">ลบผลตรวจนี้</button>
+    </div>
+    <div class="confirm" id="hConfirm" hidden><span id="hConfirmText"></span><button class="danger small" id="hConfirmYes" type="button">ลบ</button><button class="small" id="hConfirmNo" type="button">ไม่ลบ</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const CATS=[
+  {id:'measure',name:'เครื่องมือวัด'},
+  {id:'drill',name:'ดอกสว่าน (drill index)'},
+  {id:'endmill',name:'ดอกกัด End mill'},
+  {id:'acc-mill',name:'อุปกรณ์ประจำเครื่อง Milling'},
+  {id:'acc-lathe',name:'อุปกรณ์ประจำเครื่อง Lathe'},
+  {id:'acc-cut',name:'อุปกรณ์ประจำเครื่อง Cutting saw'},
+  {id:'acc-contour',name:'อุปกรณ์ประจำเครื่อง Contour'},
+  {id:'acc-grind',name:'อุปกรณ์ประจำเครื่อง Grinding'},
+  {id:'acc-surface',name:'อุปกรณ์ประจำเครื่อง Surface'},
+  {id:'acc-drill',name:'อุปกรณ์ประจำเครื่อง Drilling'},
+  {id:'acc-print',name:'อุปกรณ์ประจำเครื่อง 3D Printer'},
+  {id:'power',name:'เครื่องมือไฟฟ้า (สว่าน + แบตเตอรี่)'},
+  {id:'other',name:'อื่นๆ'}];
+const MTYPES=[
+  {id:'mill',name:'Milling',items:['ถอด tool ออกจาก spindle','ปลดล็อกโต๊ะ เก็บอุปกรณ์ vise','ทำความสะอาดเศษ chip','ปิด main power']},
+  {id:'lathe',name:'Lathe',items:[{t:'Chuck key ไม่เสียบค้างที่ chuck',safety:true},'ถอดมีด ถอยท้ายแท่นกลับ','ทำความสะอาดเศษ chip / ระดับ coolant','ปิด main power']},
+  {id:'contour',name:'Contour',items:['ใบเลื่อยไม่บิ่น ไม่เสียหาย','ทำความสะอาดเศษบนโต๊ะงาน','ปิด main power']},
+  {id:'cut',name:'Cutting saw',items:['ใบเลื่อยไม่บิ่น ไม่เสียหาย','ทำความสะอาดเศษและถาด chip','ระดับ coolant ปกติ','ปิด main power']},
+  {id:'grind',name:'Grinding',items:[{t:'หินเจียรไม่บิ่น ไม่มีรอยร้าว',safety:true},'ไม่มีชิ้นงานค้างในเครื่อง','ทำความสะอาดเศษ / ระดับ coolant','ปิด main power']},
+  {id:'surface',name:'Surface',items:[{t:'หินเจียรไม่บิ่น ไม่มีรอยร้าว',safety:true},'ปิดแม่เหล็ก magnetic chuck ไม่มีชิ้นงานค้าง','ทำความสะอาดเศษ / ระดับ coolant','ปิด main power']},
+  {id:'drill',name:'Drilling',items:[{t:'ถอดดอกออก chuck key ไม่เสียบค้าง',safety:true},'ทำความสะอาดเศษบนโต๊ะ','ปิด main power']},
+  {id:'print',name:'3D Printer',items:['ไม่มีชิ้นงานค้างบน build platform (ยกเว้นงานที่พิมพ์ข้ามคืน)','ปิดฝาเครื่อง กันแสงเข้า resin tank',{t:'เช็ดคราบ resin ทิ้งถุงมือและกระดาษเปื้อน resin ในถังเฉพาะ',safety:true},'ปิดฝาถัง IPA ใน Form Wash']}];
+const MACH_LIST=[
+  ['mill','MAKINO','KSJP'],['mill','YAMAZEN','JY-2T'],['mill','HASEGAWA','HPF-B'],['mill','PANVATANA','2M'],['mill','RAMBO','PM3K'],
+  ['lathe','KANTO SEIKI','CH430X800'],['lathe','KITAMURA','KL-25'],['lathe','SENDAY','SD-32A'],
+  ['contour','NIKO-TECH','NCC-300'],
+  ['cut','COSEN MACHINERY','MH-1016JA'],
+  ['grind','TSUGAMI','CTG4'],
+  ['surface','OKAMOTO','45DX'],
+  ['drill','KIRA MACHINERY','KRT-340'],
+  ['print','FORMLABS','FORM 4']].map(([type,brand,model])=>({type,brand,model,key:(type+'-'+brand+'-'+model).replace(/[^A-Za-z0-9-]/g,'_'),label:brand+' '+model}));
+const MODEL_FOR={'acc-mill':'mill','acc-lathe':'lathe','acc-cut':'cut','acc-contour':'contour','acc-grind':'grind','acc-surface':'surface','acc-drill':'drill','acc-print':'print'};
+const STARTER=[
+  ['VN-01','เวอร์เนียร์ 150 มม.','measure'],['VN-02','เวอร์เนียร์ 150 มม.','measure'],['VN-03','เวอร์เนียร์ 200 มม.','measure'],
+  ['RL-01','ไม้บรรทัดเหล็ก 300 มม.','measure'],['RL-02','ไม้บรรทัดเหล็ก 600 มม.','measure'],
+  ['DR-3.0','ดอกสว่าน Ø3.0','drill'],['DR-4.0','ดอกสว่าน Ø4.0','drill'],['DR-5.0','ดอกสว่าน Ø5.0','drill'],['DR-6.0','ดอกสว่าน Ø6.0','drill'],
+  ['DR-6.5','ดอกสว่าน Ø6.5','drill'],['DR-8.0','ดอกสว่าน Ø8.0','drill'],['DR-8.5','ดอกสว่าน Ø8.5','drill'],['DR-10.0','ดอกสว่าน Ø10.0','drill'],
+  ['EM-06','End mill Ø6','endmill'],['EM-08','End mill Ø8','endmill'],['EM-10','End mill Ø10','endmill'],
+  ['ML-VH-01','ด้ามขัน vise','acc-mill'],['ML-CW-01','ประแจ collet','acc-mill'],
+  ['LT-CK-01','Chuck key','acc-lathe'],['LT-TW-01','ประแจป้อมมีด','acc-lathe'],
+  ['CT-WR-01','ประแจเปลี่ยนใบตัด','acc-cut'],
+  ['PW-DR-01','สว่านไฟฟ้าไร้สาย','power'],['PW-BT-01','แบตเตอรี่สว่าน ก้อนที่ 1','power'],['PW-BT-02','แบตเตอรี่สว่าน ก้อนที่ 2','power'],['PW-CH-01','แท่นชาร์จแบตเตอรี่','power']];
+const itemText=x=>typeof x==='string'?x:x.t;
+
+const S={db:null,canWrite:true,items:[],checks:[],sel:null,loaded:false,q:{check:'',tools:''},open:{},mode:'missing',
+  chk:{mark:{},found:new Set(),mach:{},used:{}}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const dayOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>dayOf(new Date());
+const hm=iso=>{const d=new Date(iso);return pad(d.getHours())+':'+pad(d.getMinutes())};
+const dmy=day=>{const [y,m,d]=day.split('-');return `${Number(d)}/${Number(m)}`};
+const store={get(k){try{return localStorage.getItem(k)||''}catch(e){return''}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const docId=code=>code.trim().replace(/[^A-Za-z0-9_\-.~:@+]/g,'_').replace(/^\.+$/,'_');
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600)}
+
+$('today').textContent=new Date().toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+$('cName').value=store.get('msc:name');
+S.models={};
+const machOf=cat=>[...new Set(S.items.filter(i=>i.cat===cat&&(i.machBrand||i.machModel)).map(i=>[i.machBrand,i.machModel].filter(Boolean).join(' ')))].join(', ');
+const catName=c=>{if(!MODEL_FOR[c.id])return c.name;const m=machOf(c.id);return m?c.name+' · '+m:c.name};
+function renderCatOptions(){const v=$('iCat').value;$('iCat').innerHTML=CATS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');if(v)$('iCat').value=v}
+renderCatOptions();
+
+/* tabs */
+const TABS=['stock','check','summary','tools','history'];
+function show(tab){if(!TABS.includes(tab))tab='stock';
+  TABS.forEach(t=>$('tab-'+t).hidden=t!==tab);
+  document.querySelectorAll('nav.tabs a').forEach(a=>{if(a.dataset.tab===tab)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+  window.scrollTo(0,0)}
+document.querySelector('nav.tabs').addEventListener('click',e=>{const a=e.target.closest('a[data-tab]');if(!a)return;e.preventDefault();show(a.dataset.tab);try{history.replaceState(null,'','#'+a.dataset.tab)}catch(_){}});
+show((location.hash||'').slice(1));
+
+/* derived */
+const sorted=()=>[...S.items].sort((a,b)=>a.code.localeCompare(b.code,undefined,{numeric:true}));
+const todayCheck=()=>S.checks.find(c=>c.day===today());
+const recent=n=>{const lim=dayOf(new Date(Date.now()-n*864e5));return S.checks.filter(c=>c.day>=lim)};
+
+/* renderers */
+function li(main,sub,right){return `<div class="li"><div class="main">${main}${sub?`<div class="sub">${sub}</div>`:''}</div>${right||''}</div>`}
+function tileHTML(i,mode){
+  let cls='tile',h='';
+  if(i.status==='missing'){cls+=' missing';h='หายค้าง'}
+  if(i.status==='damaged'){cls+=' damaged';h='ชำรุด'}
+  if(mode==='check'){
+    const m=S.chk.mark[i.id];
+    if(i.status==='in'&&m==='missing'){cls+=' mark-missing';h='ขาด'}
+    if(i.status==='in'&&m==='tag'){cls+=' mark-tag';h='ยืมอยู่'}
+    if(i.status==='in'&&m==='damaged'){cls+=' mark-dmg';h='ชำรุด'}
+    if(i.status==='missing'&&S.chk.found.has(i.id)){cls='tile mark-found';h='เจอแล้ว'}
+    if(i.status==='damaged'&&S.chk.found.has(i.id)){cls='tile mark-found';h='ซ่อมแล้ว'}
+  }
+  return `<button type="button" class="${cls}" data-id="${esc(i.id)}" data-mode="${mode}"${i.serial?` title="S/N ${esc(i.serial)}"`:''}><span class="c">${esc(i.code)}</span><span class="t">${esc(i.name)}</span>${h?`<span class="h">${h}</span>`:''}</button>`}
+function boardHTML(mode){
+  const items=sorted();
+  if(!items.length){
+    if(!S.loaded)return `<div class="empty">กำลังโหลดรายการ…</div>`;
+    return `<div class="panel"><h3>บอร์ดยังว่างอยู่</h3><p class="lead" style="margin:0">สร้างชุดเริ่มต้น (เครื่องมือวัด 5, ดอกสว่าน Ø3–10 จำนวน 8, End mill 3, อุปกรณ์ประจำ Milling / Lathe / Cutting 5 ชิ้น, สว่านไฟฟ้า + แบตเตอรี่ 2 ก้อน + แท่นชาร์จ) แล้วแก้รหัสและชื่อให้ตรงกับของจริงในหน้าจัดการบอร์ด</p><div class="row"><button class="primary seedBtn" type="button" ${S.canWrite&&S.db?'':'disabled'}>สร้างชุดเริ่มต้น</button></div></div>`}
+  const q=(S.q[mode]||'').trim().toLowerCase();
+  const hit=i=>!q||[i.code,i.name,i.serial,i.machBrand,i.machModel].join(' ').toLowerCase().includes(q);
+  const chev='<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>';
+  const html=CATS.map(c=>{const all=items.filter(i=>i.cat===c.id||(c.id==='other'&&!CATS.some(x=>x.id===i.cat)));const g=all.filter(hit);if(!g.length)return'';
+    const miss=all.filter(i=>i.status==='missing').length,k=mode+':'+c.id,open=q||S.open[k]!==false;
+    let extra='';if(mode==='check'){const mm=all.filter(i=>S.chk.mark[i.id]==='missing').length,tt=all.filter(i=>S.chk.mark[i.id]==='tag').length;
+      const dd=all.filter(i=>S.chk.mark[i.id]==='damaged').length;if(mm)extra+=`<span class="pill bad">ขาด ${mm}</span>`;if(tt)extra+=`<span class="pill warn">ยืม ${tt}</span>`;if(dd)extra+=`<span class="pill dmg">ชำรุด ${dd}</span>`}
+    const dmgN=all.filter(i=>i.status==='damaged').length;if(dmgN)extra+=`<span class="pill dmg">รอซ่อม ${dmgN}</span>`;
+    return `<details class="board-group" data-k="${esc(k)}"${open?' open':''}><summary><span class="gt">${chev}<span class="eyebrow">${esc(catName(c))}</span></span><span class="gc">${extra}${miss?`<span class="pill bad">หายค้าง ${miss}</span>`:''}<span>${q?g.length+'/':''}${all.length} ช่อง</span></span></summary><div class="slots">${g.map(i=>tileHTML(i,mode)).join('')}</div></details>`}).join('');
+  return html||`<div class="empty-q">ไม่พบเครื่องมือที่ตรงกับ "${esc(q)}"</div>`;
+}
+function renderMach(){
+  $('machList').innerHTML=MTYPES.map(t=>{const ms=MACH_LIST.filter(m=>m.type===t.id);if(!ms.length)return'';
+    const nu=ms.filter(m=>S.chk.used[m.key]).length;
+    return `<div class="mgroup"><div class="mgh"><span class="eyebrow">${esc(t.name)}</span><span class="sub" style="font-size:.8rem;color:var(--muted)">${ms.length} เครื่อง${nu?` · ใช้วันนี้ ${nu}`:''}</span></div><div class="mach">${ms.map(m=>{
+      const used=!!S.chk.used[m.key],done=used&&t.items.every((_,k)=>S.chk.mach[m.key+'-'+k]);
+      return `<div class="panel ${!used?'skip':done?'ok':''}"><div class="mh"><h3>${esc(m.label)}</h3><button type="button" class="skipbtn" data-used="${m.key}" aria-pressed="${used}">${used?'ใช้วันนี้ ✓':'เปิดใช้วันนี้'}</button></div>${used?t.items.map((x,k)=>`<label><input type="checkbox" data-mach="${m.key}-${k}" ${S.chk.mach[m.key+'-'+k]?'checked':''}><span>${esc(itemText(x))}${x.safety?' <span class="tag">ความปลอดภัย</span>':''}</span></label>`).join(''):''}</div>`}).join('')}</div></div>`}).join('');
+}
+function machResult(){const fails=[],used=[];
+  MACH_LIST.forEach(m=>{if(!S.chk.used[m.key])return;used.push(m.label);const t=MTYPES.find(x=>x.id===m.type);
+    t.items.forEach((x,k)=>{if(!S.chk.mach[m.key+'-'+k])fails.push(m.label+': '+itemText(x))})});
+  return {fails,used}}
+function renderSummary(){
+  const byId=id=>S.items.find(i=>i.id===id);
+  const miss=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='missing').map(byId).filter(Boolean);
+  const tag=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='tag').map(byId).filter(Boolean);
+  const dmg=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='damaged').map(byId).filter(Boolean);
+  const found=[...S.chk.found].map(byId).filter(Boolean);
+  const still=S.items.filter(i=>i.status==='missing'&&!S.chk.found.has(i.id));
+  const {fails}=machResult();const matBad=$('matBad').checked,area=$('areaOk').checked;
+  $('st1').classList.toggle('done',S.items.length>0);
+  $('st2').classList.toggle('done',!fails.length);
+  $('st3').classList.toggle('done',area&&(!matBad||!!$('matNote').value.trim()));
+  const codes=a=>a.map(i=>`<span class="code">${esc(i.code)}</span>`).join(', ');
+  const L=[];
+  L.push(miss.length?`<span class="pill bad">ขาด ${miss.length}</span> ${codes(miss)}`:`<span class="pill good">เครื่องมือครบ</span>`);
+  if(tag.length)L.push(`<span class="pill warn">มีป้ายยืม ${tag.length}</span> ${codes(tag)}`);
+  if(dmg.length)L.push(`<span class="pill dmg">ชำรุด ${dmg.length}</span> ${codes(dmg)}`);
+  if(found.length)L.push(`<span class="pill good">เจอคืน / ซ่อมแล้ว ${found.length}</span> ${codes(found)}`);
+  if(still.length)L.push(`<span class="pill mute">หายค้างจากวันก่อน ${still.length}</span>`);
+  {const nu=machResult().used.length;L.push(nu?`<span class="pill mute">ใช้งานวันนี้ ${nu} เครื่อง</span>`:`<span class="pill mute">ยังไม่ได้เลือกเครื่องที่ใช้วันนี้</span>`)}
+  L.push(fails.length?`<span class="pill warn">เครื่องจักรยังไม่ผ่าน ${fails.length} ข้อ</span>`:`<span class="pill good">เครื่องจักรผ่านทุกข้อ</span>`);
+  L.push(matBad?`<span class="pill bad">วัสดุผิดปกติ</span>`:`<span class="pill good">วัสดุปกติ</span>`);
+  L.push(area?`<span class="pill good">พื้นที่เรียบร้อย</span>`:`<span class="pill warn">ยังไม่ยืนยันพื้นที่</span>`);
+  $('checkSummary').innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">${L.map(l=>`<div>${l}</div>`).join('')}</div>`;
+  const nu=machResult().used.length;
+  $('saveSv').innerHTML=`<span class="${miss.length?'bad':''}"><b>${miss.length}</b>ขาด</span><span class="${tag.length?'warn':''}"><b>${tag.length}</b>ยืมอยู่</span><span class="${dmg.length?'dmg':''}"><b>${dmg.length}</b>ชำรุด</span><span><b>${nu}</b>เครื่องที่ใช้</span>${fails.length?`<span class="warn"><b>${fails.length}</b>ข้อไม่ผ่าน</span>`:''}`;
+}
+function renderCheck(){
+  const ck=todayCheck(),cd=$('checkDone');cd.hidden=!ck;
+  if(ck)cd.innerHTML=`<span class="pill good">วันนี้ตรวจแล้ว</span> ${hm(ck.ts)} โดย ${esc(ck.checker)} · ตรวจซ้ำได้ ผลล่าสุดจะแทนที่ของเดิม`;
+  $('checkBoard').innerHTML=boardHTML('check');renderSummary();
+}
+function longTagged(){
+  const days=[...S.checks].sort((a,b)=>b.day.localeCompare(a.day)).slice(0,3);if(days.length<3)return[];
+  const sets=days.map(c=>new Set(c.tagged||[]));
+  return [...sets[0]].filter(code=>sets.every(s=>s.has(code)));
+}
+function renderStats(){
+  const r=recent(30),miss=S.items.filter(i=>i.status==='missing'),ck=todayCheck();
+  const fails30=r.reduce((n,c)=>n+(c.machineFails||[]).length,0);
+  $('stats').innerHTML=`
+    <div class="stat ${miss.length?'bad':'good'}"><span class="n">${miss.length}</span><span class="l">ของหายค้างตอนนี้</span></div>
+    <div class="stat ${ck?'good':'warn'}"><span class="n">${ck?'✓':'—'}</span><span class="l">${ck?'วันนี้ตรวจแล้ว':'วันนี้ยังไม่ได้ตรวจ'}</span></div>
+    <div class="stat"><span class="n">${r.length}</span><span class="l">วันที่ตรวจใน 30 วัน</span></div>
+    <div class="stat ${fails30?'warn':''}"><span class="n">${fails30}</span><span class="l">ข้อเครื่องจักรไม่ผ่าน (30 วัน)</span></div>`;
+  const dmgs=S.items.filter(i=>i.status==='damaged');
+  $('sumDmg').innerHTML=dmgs.length?dmgs.map(i=>li(`<span class="code">${esc(i.code)}</span> ${esc(i.name)}`,[i.serial?'S/N '+esc(i.serial):'',i.damagedSince?'แจ้งชำรุด '+dmy(i.damagedSince.slice(0,10)):''].filter(Boolean).join(' · '),`<span class="pill dmg">ชำรุด</span>`)).join(''):`<div class="empty">ไม่มีของชำรุด</div>`;
+  $('sumMissing').innerHTML=miss.length?miss.map(i=>li(`<span class="code">${esc(i.code)}</span> ${esc(i.name)}`,[i.serial?'S/N '+esc(i.serial):'',i.missingSince?'พบว่าขาด '+dmy(i.missingSince.slice(0,10)):''].filter(Boolean).join(' · '),`<span class="pill bad">หาย</span>`)).join(''):`<div class="empty">ไม่มีของหายค้าง</div>`;
+  const freq={};r.forEach(c=>(c.missing||[]).forEach(code=>freq[code]=(freq[code]||0)+1));
+  const fr=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8),fmax=fr.length?fr[0][1]:1;
+  const nm=code=>(S.items.find(i=>i.code===code)||{}).name||'';
+  $('sumFreq').innerHTML=fr.length?fr.map(([code,n])=>li(`<span class="code">${esc(code)}</span> ${esc(nm(code))}`,'',`<span class="bar"><i style="width:${n/fmax*100}%"></i></span><span class="pill bad">${n} ครั้ง</span>`)).join(''):`<div class="empty">ยังไม่มีข้อมูลของหายใน 30 วัน</div>`;
+  const lt=longTagged();
+  $('sumLong').innerHTML=lt.length?lt.map(code=>li(`<span class="code">${esc(code)}</span> ${esc(nm(code))}`,'ป้ายแขวนค้างที่ช่อง 3 การตรวจติดกัน',`<span class="pill warn">ตามคืน</span>`)).join(''):`<div class="empty">ไม่มีของที่ยืมนาน</div>`;
+  const mf={};r.forEach(c=>(c.machineFails||[]).forEach(f=>{const m=f.split(':')[0];mf[m]=(mf[m]||0)+1}));
+  const mr=Object.entries(mf).sort((a,b)=>b[1]-a[1]),mmax=mr.length?mr[0][1]:1;
+  $('sumMach').innerHTML=mr.length?mr.map(([m,n])=>li(esc(m),'',`<span class="bar w"><i style="width:${n/mmax*100}%"></i></span><span class="pill warn">${n} ข้อ</span>`)).join(''):`<div class="empty">เครื่องจักรผ่านทุกข้อใน 30 วัน</div>`;
+  const b=$('badgeMissing');b.hidden=!miss.length;b.textContent=miss.length;
+}
+function renderHistory(){
+  $('checkHist').innerHTML=S.checks.length?S.checks.map(c=>{
+    const bad=(c.missing||[]).length,mf=(c.machineFails||[]).length;
+    const pills=[bad?`<span class="pill bad">ขาด ${bad}</span>`:`<span class="pill good">ครบ</span>`];
+    if((c.tagged||[]).length)pills.push(`<span class="pill warn">ยืม ${c.tagged.length}</span>`);
+    if((c.damaged||[]).length)pills.push(`<span class="pill dmg">ชำรุด ${c.damaged.length}</span>`);
+    if(mf)pills.push(`<span class="pill warn">เครื่องจักร ${mf} ข้อ</span>`);
+    if(c.materialOk===false)pills.push(`<span class="pill bad">วัสดุผิดปกติ</span>`);
+    if(c.batteryCharged===false)pills.push(`<span class="pill warn">แบตไม่ได้ชาร์จ</span>`);
+    const sub=[bad?'ขาด: '+c.missing.map(esc).join(', '):'',(c.tagged||[]).length?'มีป้ายยืม: '+c.tagged.map(esc).join(', '):'',(c.found||[]).length?'เจอคืน: '+c.found.map(esc).join(', '):'',(c.damaged||[]).length?'ชำรุด: '+c.damaged.map(esc).join(', '):'',(c.repaired||[]).length?'ซ่อมแล้ว: '+c.repaired.map(esc).join(', '):'',mf?esc(c.machineFails.join(' · ')):'',(c.used||[]).length?'เครื่องที่ใช้: '+c.used.map(esc).join(', '):'',(c.skipped||[]).length?'ไม่ได้ใช้: '+c.skipped.map(esc).join(', '):'',c.materialNote?'วัสดุ: '+esc(c.materialNote):'',c.note?'หมายเหตุ: '+esc(c.note):''].filter(Boolean).join('<br>');
+    return li(`<b>${dmy(c.day)}</b> · ${esc(c.checker)} <span class="code">${hm(c.ts)}</span>${c.editedAt?` <span class="pill mute">แก้ไขแล้ว ${dmy(c.editedAt.slice(0,10))}</span>`:''}`,sub,`<span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${pills.join('')}<button class="small" type="button" data-hedit="${esc(c.id)}">แก้ไข</button></span>`)}).join(''):`<div class="empty">ยังไม่มีผลตรวจ บันทึกครั้งแรกจากหน้าตรวจก่อนกลับ</div>`;
+}
+function renderAll(){renderCatOptions();renderStock();renderCheck();renderStats();$('board').innerHTML=boardHTML('tools');renderHistory();if(S.sel)renderSheet()}
+
+/* writes */
+function guard(){if(!S.db){toast('บันทึกไม่ได้ในมุมมองนี้');return false}if(!S.canWrite){toast('บัญชีนี้ดูได้อย่างเดียว');return false}return true}
+async function run(btn,fn,ok){if(!guard())return;btn.disabled=true;try{await fn();if(ok)toast(ok)}catch(e){toast(e&&e.code==='quota_exceeded'?'พื้นที่เก็บข้อมูลเต็ม':e&&e.code==='invalid_argument'?'บัญชีนี้ไม่มีสิทธิ์บันทึก':'บันทึกไม่สำเร็จ ลองอีกครั้ง')}finally{btn.disabled=false}}
+const blank=(code,name,cat,loc,serial)=>({code,name,cat,loc:loc||'',serial:serial||'',status:'in',missingSince:''});
+
+/* item form */
+let editing=null;
+function resetItemForm(){editing=null;$('itemForm').reset();$('iCode').disabled=false;$('iSubmit').textContent='เพิ่มรายการ';$('iCancel').hidden=true;setMach('','');syncMachRow()}
+const NEW='__new__';
+function machPairs(type){const m=new Map(),add=(b,mo)=>{if(b||mo)m.set((b||'')+'|'+(mo||''),[b||'',mo||''])};
+  MACH_LIST.filter(x=>!type||x.type===type).forEach(x=>add(x.brand,x.model));
+  S.items.filter(i=>!type||i.cat==='acc-'+type).forEach(i=>add(i.machBrand,i.machModel));
+  if(!type)(S.stock||[]).forEach(i=>add(i.machBrand,i.machModel));
+  return [...m.values()]}
+function opts(list,sel,label){const L=[...new Set(list.filter(Boolean))].sort();if(sel&&!L.includes(sel))L.push(sel);
+  return `<option value="">— เลือก${label} —</option>`+L.map(v=>`<option value="${esc(v)}"${v===sel?' selected':''}>${esc(v)}</option>`).join('')+`<option value="${NEW}">+ เพิ่ม${label}ใหม่</option>`}
+function fillBrand(sel){$('iBrand').innerHTML=opts(machPairs(MODEL_FOR[$('iCat').value]).map(p=>p[0]),sel,'แบรนด์');$('iBrandNew').hidden=true;$('iBrandNew').value=''}
+function fillModel(b,sel){$('iModel').innerHTML=opts(machPairs(MODEL_FOR[$('iCat').value]).filter(p=>p[0]===b).map(p=>p[1]),sel,'รุ่น');$('iModelNew').hidden=true;$('iModelNew').value=''}
+function setMach(b,m){fillBrand(b);fillModel(b,m)}
+const brandVal=()=>$('iBrand').value===NEW?$('iBrandNew').value.trim():$('iBrand').value;
+const modelVal=()=>$('iModel').value===NEW?$('iModelNew').value.trim():$('iModel').value;
+$('iBrand').addEventListener('change',()=>{const n=$('iBrand').value===NEW;$('iBrandNew').hidden=!n;
+  const b=n?'':$('iBrand').value,ms=machPairs(MODEL_FOR[$('iCat').value]).filter(p=>p[0]===b&&b).map(p=>p[1]);fillModel(b,ms.length===1?ms[0]:'');
+  if(n){$('iModel').value=NEW;$('iModelNew').hidden=false;$('iBrandNew').focus()}});
+$('iModel').addEventListener('change',()=>{const n=$('iModel').value===NEW;$('iModelNew').hidden=!n;if(n)$('iModelNew').focus()});
+function syncMachRow(){const type=MODEL_FOR[$('iCat').value];$('iMachRow').hidden=!type;if(!type)return;
+  const ps=machPairs(type),b=brandVal(),mo=modelVal();
+  if(ps.some(p=>p[0]===b&&p[1]===mo)||(editing&&(b||mo))){setMach(b,mo);return}
+  const ref=S.items.find(i=>i.cat===$('iCat').value&&(i.machBrand||i.machModel));
+  const pick=ref?[ref.machBrand||'',ref.machModel||'']:ps.length===1?ps[0]:['',''];setMach(pick[0],pick[1])}
+$('iCat').addEventListener('change',syncMachRow);
+$('iCancel').addEventListener('click',resetItemForm);
+$('itemForm').addEventListener('submit',e=>{e.preventDefault();
+  const code=$('iCode').value.trim().toUpperCase(),name=$('iName').value.trim();if(!code||!name)return;
+  if(S.items.some(i=>i.code===code&&i.id!==editing)){toast('รหัส '+code+' มีอยู่แล้ว');return}
+  let id=editing||docId(code);if(!editing&&S.items.some(i=>i.id===id))id=docId(code)+'-'+Date.now().toString(36);
+  run($('iSubmit'),async()=>{const ref=S.db.doc('items/'+id);
+    const serial=$('iSerial').value.trim(),acc=!!MODEL_FOR[$('iCat').value];
+    const machBrand=acc?brandVal():'',machModel=acc?modelVal():'';
+    if(editing)await ref.update({code,name,cat:$('iCat').value,loc:$('iLoc').value.trim(),serial,machBrand,machModel});
+    else await ref.set({...blank(code,name,$('iCat').value,$('iLoc').value.trim(),serial),machBrand,machModel});
+    const was=!!editing;resetItemForm();toast(was?'แก้ไขแล้ว':'เพิ่ม '+code+' แล้ว')})});
+
+/* clicks */
+document.addEventListener('click',e=>{
+  const seed=e.target.closest('.seedBtn');
+  if(seed){run(seed,async()=>{for(const [c,n,cat] of STARTER)await S.db.doc('items/'+docId(c)).set(blank(c,n,cat))},'สร้างชุดเริ่มต้นแล้ว');return}
+  const sk=e.target.closest('[data-used]');
+  if(sk){const id=sk.dataset.used;S.chk.used[id]=!S.chk.used[id];renderMach();renderSummary();return}
+  const t=e.target.closest('.tile');if(!t)return;
+  const it=S.items.find(i=>i.id===t.dataset.id);if(!it)return;
+  if(t.dataset.mode==='check'){
+    if(it.status==='missing'||it.status==='damaged'){S.chk.found.has(it.id)?S.chk.found.delete(it.id):S.chk.found.add(it.id)}
+    else{if(S.chk.mark[it.id]===S.mode)delete S.chk.mark[it.id];else S.chk.mark[it.id]=S.mode}
+    $('checkBoard').innerHTML=boardHTML('check');renderSummary();return}
+  openSheet(it.id)});
+$('machList').addEventListener('change',e=>{const k=e.target.dataset.mach;if(k){S.chk.mach[k]=e.target.checked;renderMach();renderSummary()}});
+['matOk','matBad'].forEach(id=>$(id).addEventListener('change',()=>{$('matNoteWrap').hidden=!$('matBad').checked;renderSummary()}));
+$('matNote').addEventListener('input',renderSummary);
+$('areaOk').addEventListener('change',renderSummary);
+
+/* sheet */
+function openSheet(id){S.sel=id;$('sConfirm').hidden=true;$('scrim').hidden=false;renderSheet();setTimeout(()=>$('sClose').focus(),0)}
+function closeSheet(){S.sel=null;$('scrim').hidden=true}
+function renderSheet(){const it=S.items.find(i=>i.id===S.sel);if(!it){closeSheet();return}
+  $('sCode').textContent=it.code;$('sTitle').textContent=it.name;
+  const cat=catName(CATS.find(c=>c.id===it.cat)||{id:'',name:'อื่นๆ'});
+  $('sInfo').innerHTML=(it.serial?`<div>S/N <span class="code">${esc(it.serial)}</span></div>`:'')+(it.machBrand||it.machModel?`<div>ใช้กับเครื่อง ${esc([it.machBrand,it.machModel].filter(Boolean).join(' '))}</div>`:'')+(it.status==='damaged'?`<span class="pill dmg">ชำรุด</span> ตั้งแต่ ${it.damagedSince?dmy(it.damagedSince.slice(0,10)):'—'}`:it.status==='missing'?`<span class="pill bad">หายค้าง</span> ตั้งแต่ ${it.missingSince?dmy(it.missingSince.slice(0,10)):'—'}`:`<span class="pill good">อยู่ที่บอร์ด</span> ${esc(cat)}${it.loc?' · '+esc(it.loc):''}`);
+  $('sFoundRow').hidden=it.status==='in';$('sDoFound').textContent=it.status==='damaged'?'ซ่อมแล้ว ใช้งานได้':'เจอแล้ว คืนเข้าบอร์ด';$('sDoMissing').hidden=it.status==='missing';$('sDoDmg').hidden=it.status!=='in'}
+$('sClose').addEventListener('click',closeSheet);
+$('scrim').addEventListener('click',e=>{if(e.target===$('scrim'))closeSheet()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('scrim').hidden)closeSheet()});
+const cur=()=>S.items.find(i=>i.id===S.sel);
+$('sDoFound').addEventListener('click',()=>{const it=cur();if(!it)return;const d=it.status==='damaged';run($('sDoFound'),async()=>{await S.db.doc('items/'+it.id).update({status:'in',missingSince:'',damagedSince:''});closeSheet()},(d?'บันทึกว่าซ่อม ':'บันทึกว่าเจอ ')+it.code+' แล้ว')});
+$('sDoDmg').addEventListener('click',()=>{const it=cur();if(!it)return;run($('sDoDmg'),async()=>{await S.db.doc('items/'+it.id).update({status:'damaged',damagedSince:new Date().toISOString()});closeSheet()},'แจ้งชำรุด '+it.code+' แล้ว')});
+$('sDoMissing').addEventListener('click',()=>{const it=cur();if(!it)return;run($('sDoMissing'),async()=>{await S.db.doc('items/'+it.id).update({status:'missing',missingSince:new Date().toISOString()});closeSheet()},'แจ้งของหายแล้ว')});
+$('sEdit').addEventListener('click',()=>{const it=cur();if(!it)return;editing=it.id;$('iCode').value=it.code;$('iName').value=it.name;$('iCat').value=it.cat;$('iLoc').value=it.loc||'';$('iSerial').value=it.serial||'';setMach(it.machBrand||'',it.machModel||'');syncMachRow();$('iSubmit').textContent='บันทึกการแก้ไข';$('iCancel').hidden=false;$('addPanel').open=true;closeSheet();show('tools');$('addPanel').scrollIntoView({block:'start'});$('iName').focus()});
+$('sDelete').addEventListener('click',()=>{$('sConfirm').hidden=false});
+$('sConfirmNo').addEventListener('click',()=>{$('sConfirm').hidden=true});
+$('sConfirmYes').addEventListener('click',()=>{const it=cur();if(!it)return;run($('sConfirmYes'),async()=>{await S.db.doc('items/'+it.id).delete();closeSheet()},'ลบ '+it.code+' แล้ว')});
+
+/* submit check */
+$('cSubmit').addEventListener('click',()=>{
+  const checker=$('cName').value.trim();if(!checker){toast('ใส่ชื่อผู้ตรวจ');$('cName').focus();return}
+  if(!S.items.length){toast('ยังไม่มีรายการเครื่องมือบนบอร์ด');return}
+  const matBad=$('matBad').checked;if(matBad&&!$('matNote').value.trim()){toast('ระบุรายละเอียดวัสดุที่ผิดปกติ');$('matNote').focus();return}
+  const byId=id=>S.items.find(i=>i.id===id);
+  const miss=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='missing').map(byId).filter(i=>i&&i.status==='in');
+  const tag=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='tag').map(byId).filter(Boolean);
+  const found=[...S.chk.found].map(byId).filter(i=>i&&i.status==='missing');
+  const repaired=[...S.chk.found].map(byId).filter(i=>i&&i.status==='damaged');
+  const dmg=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='damaged').map(byId).filter(i=>i&&i.status==='in');
+  const {fails,used}=machResult();const now=new Date().toISOString(),day=today();
+  run($('cSubmit'),async()=>{
+    for(const it of miss)await S.db.doc('items/'+it.id).update({status:'missing',missingSince:now});
+    for(const it of found)await S.db.doc('items/'+it.id).update({status:'in',missingSince:''});
+    for(const it of repaired)await S.db.doc('items/'+it.id).update({status:'in',damagedSince:''});
+    for(const it of dmg)await S.db.doc('items/'+it.id).update({status:'damaged',damagedSince:now});
+    await S.db.doc('checks/'+day).set({day,ts:now,checker,missing:miss.map(i=>i.code),tagged:tag.map(i=>i.code),found:found.map(i=>i.code),damaged:dmg.map(i=>i.code),repaired:repaired.map(i=>i.code),stillMissing:S.items.filter(i=>i.status==='missing'&&!found.includes(i)).map(i=>i.code),machineFails:fails,used,materialOk:!matBad,materialNote:matBad?$('matNote').value.trim():'',areaOk:$('areaOk').checked,batteryCharged:$('battOk').checked,note:$('cNote').value.trim()});
+    store.set('msc:name',checker);
+    S.chk={mark:{},found:new Set(),mach:{},used:{}};renderMach();
+    $('matOk').checked=true;$('matNote').value='';$('matNoteWrap').hidden=true;$('areaOk').checked=false;$('battOk').checked=false;$('cNote').value='';
+    renderCheck();window.scrollTo(0,0)},'บันทึกผลตรวจแล้ว')});
+
+/* ================= STOCK ================= */
+const SCATS=[
+  {id:'drill',name:'ดอกสว่าน / ดอกนำศูนย์'},
+  {id:'mill',name:'End mill / ดอกกัด'},
+  {id:'insert',name:'Insert / มีดกลึง'},
+  {id:'tap',name:'ดอกต๊าป / ดอกคว้าน'},
+  {id:'blade',name:'ใบตัด / ใบเลื่อย'},
+  {id:'measure',name:'เครื่องมือวัด'},
+  {id:'hand',name:'เครื่องมือมือ (ประแจ, ไขควง, ตะไบ)'},
+  {id:'holding',name:'อุปกรณ์จับยึด (collet, holder)'},
+  {id:'power',name:'เครื่องมือไฟฟ้า (สว่าน, แบตเตอรี่)'},
+  {id:'spare',name:'อะไหล่เครื่องจักร (สายพาน, ลูกปืน, ฟิวส์)'}];
+const UNITS=['ดอก','ชิ้น','ใบ','ตัว','อัน','ชุด','กล่อง','เครื่อง','ก้อน','เส้น','ลูก'];
+const SPARE_CATS=['spare'];
+const DECIMAL_UNITS=[];
+const STOCK_STARTER=[
+  ['DR-HSS-3.0','ดอกสว่าน HSS Ø3.0','drill','ดอก'],
+  ['DR-HSS-5.0','ดอกสว่าน HSS Ø5.0','drill','ดอก'],
+  ['DR-HSS-6.0','ดอกสว่าน HSS Ø6.0','drill','ดอก'],
+  ['DR-HSS-8.5','ดอกสว่าน HSS Ø8.5','drill','ดอก'],
+  ['DR-HSS-10.0','ดอกสว่าน HSS Ø10.0','drill','ดอก'],
+  ['CD-3.15','ดอกนำศูนย์ Ø3.15','drill','ดอก'],
+  ['EM-C6','End mill คาร์ไบด์ Ø6 (4 ฟัน)','mill','ดอก'],
+  ['EM-C10','End mill คาร์ไบด์ Ø10 (4 ฟัน)','mill','ดอก'],
+  ['INS-CCMT','Insert CCMT 09T304','insert','ชิ้น'],
+  ['INS-DCMT','Insert DCMT 11T304','insert','ชิ้น'],
+  ['TAP-M6','ดอกต๊าป M6 × 1.0','tap','ดอก'],
+  ['TAP-M8','ดอกต๊าป M8 × 1.25','tap','ดอก'],
+  ['BL-CUT','ใบตัด เครื่อง Cutting','blade','ใบ'],
+  ['VN-150','เวอร์เนียร์ 150 มม.','measure','ตัว'],
+  ['HEX-SET','ประแจหกเหลี่ยม ชุด 1.5–10','hand','ชุด']];
+S.stock=[];S.moves=[];S.ksel=null;S.loadedStock=false;
+let kEditing=null;
+const num=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
+const fmt=(n,u)=>{if(!Number.isFinite(n))return'∞';const d=DECIMAL_UNITS.includes(u)?1:0;return n.toLocaleString('th-TH',{maximumFractionDigits:d,minimumFractionDigits:0})};
+const roundUp=(x,u)=>DECIMAL_UNITS.includes(u)?Math.ceil(x*10-1e-9)/10:Math.ceil(x-1e-9);
+
+function calc(it){
+  const avg=num(it.usageAvg),mx=num(it.usageMax),lead=num(it.leadDays),u=it.unit,on=num(it.onHand);
+  const ready=lead>0&&(avg>0||(it.ssMode==='manual'&&num(it.ssManual)>0));
+  const daily=avg/30,dmax=mx>avg?mx/30:daily;
+  const ss=it.ssMode==='manual'?num(it.ssManual):roundUp(Math.max(0,(dmax-daily)*lead),u);
+  const rop=roundUp(daily*lead+ss,u);
+  const status=!ready?'setup':on<ss?'crit':on<=rop?'reorder':'ok';
+  const cover=daily>0?on/daily:Infinity;
+  const target=num(it.maxStock)>on?num(it.maxStock):roundUp(rop+Math.max(avg,1),u);
+  const order=(status==='crit'||status==='reorder')?roundUp(Math.max(0,target-on),u):0;
+  return {avg,mx,lead,daily,dmax,ss,rop,status,cover,order,ready,on}}
+const ST={ok:['ปกติ','good'],reorder:['ถึงจุดสั่งซื้อ','warn'],crit:['ต่ำกว่า Safety stock','bad'],setup:['ยังไม่ตั้งค่า','mute']};
+
+function actualUsage(it){
+  const lim=Date.now()-180*864e5;
+  const mv=S.moves.filter(m=>m.itemId===it.id&&new Date(m.ts)>=lim);
+  if(!mv.length)return null;
+  const first=Math.min(...mv.map(m=>new Date(m.ts).getTime()));
+  const span=(Date.now()-first)/864e5;if(span<30)return {span};
+  const use=m=>m.baseline?0:m.type==='out'?num(m.qty):m.type==='count'?num(m.before)-num(m.after):0;
+  const used=mv.reduce((n,m)=>n+use(m),0);
+  const full=Math.floor(span/30);let maxMonth=null;
+  if(full>=2){const b=Array(full).fill(0);mv.forEach(m=>{const k=Math.floor((new Date(m.ts)-first)/(30*864e5));if(k<full)b[k]+=use(m)});maxMonth=Math.max(0,...b)}
+  return {span,perMonth:Math.max(0,used)/span*30,maxMonth}}
+
+function gauge(it,c){const cap=Math.max(num(it.maxStock),c.rop*2,c.on,1);
+  return `<div class="gauge ${c.status==='crit'?'c':c.status==='reorder'?'r':''}"><b style="width:${Math.min(100,c.on/cap*100)}%"></b>${c.ready?`<i style="left:${Math.min(100,c.rop/cap*100)}%" title="จุดสั่งซื้อ"></i>`:''}</div>`}
+
+function renderStock(){
+  const rows=S.stock.map(it=>({it,c:calc(it)}));
+  const crit=rows.filter(r=>r.c.status==='crit'),reo=rows.filter(r=>r.c.status==='reorder'),setup=rows.filter(r=>r.c.status==='setup');
+  const stale=rows.filter(r=>!r.it.lastCountAt||Date.now()-new Date(r.it.lastCountAt)>30*864e5);
+  $('stockStats').innerHTML=`
+    <div class="stat ${crit.length?'bad':''}"><span class="n">${crit.length}</span><span class="l">ต่ำกว่า Safety stock</span></div>
+    <div class="stat ${reo.length?'warn':''}"><span class="n">${reo.length}</span><span class="l">ถึงจุดสั่งซื้อ</span></div>
+    <div class="stat"><span class="n">${setup.length}</span><span class="l">ยังไม่ตั้งค่า</span></div>
+    <div class="stat ${stale.length&&S.stock.length?'warn':''}"><span class="n">${stale.length}</span><span class="l">ไม่ได้นับเกิน 30 วัน</span></div>`;
+  const b=$('badgeReorder');b.hidden=!(crit.length+reo.length);b.textContent=crit.length+reo.length;
+  const need=[...crit,...reo];
+  $('orderList').innerHTML=need.length?need.map(({it,c})=>li(`<span class="code">${esc(it.code)}</span> ${esc(it.name)}`,`คงเหลือ ${fmt(c.on,it.unit)} · จุดสั่งซื้อ ${fmt(c.rop,it.unit)} · พอใช้ ${Number.isFinite(c.cover)?Math.floor(c.cover)+' วัน':'—'} · lead time ${fmt(c.lead)} วัน`,`<span class="pill ${ST[c.status][1]}">สั่ง ${fmt(c.order,it.unit)} ${esc(it.unit)}</span>`)).join(''):`<div class="empty">${S.stock.length?'ยังไม่มีรายการที่ต้องสั่งซื้อ':'ยังไม่มีรายการสต็อก'}</div>`;
+  $('copyOrder').disabled=!need.length;
+  const q=$('stockSearch').value.trim().toLowerCase(),cat=$('stockCat').value;
+  const order={crit:0,reorder:1,setup:2,ok:3};
+  const shown=rows.filter(r=>(!cat||r.it.cat===cat)&&(!q||(r.it.code+' '+r.it.name+' '+(r.it.machBrand||'')+' '+(r.it.machModel||'')).toLowerCase().includes(q)))
+    .sort((a,b)=>order[a.c.status]-order[b.c.status]||a.it.code.localeCompare(b.it.code,undefined,{numeric:true}));
+  if(!S.stock.length){
+    $('stockBody').innerHTML=`<tr><td colspan="6"><div style="display:flex;flex-direction:column;gap:10px;padding:8px 0;cursor:default">${S.loadedStock?`<b>ยังไม่มีรายการสต็อก</b><span class="lead" style="margin:0">เพิ่มทีละรายการจากฟอร์มด้านล่าง หรือสร้างรายการตั้งต้น 15 รายการ (ดอกสว่าน, ดอกนำศูนย์, end mill, insert, ต๊าป, ใบตัด, เวอร์เนียร์, ประแจหกเหลี่ยม) โดยยอดคงเหลือเป็น 0 แล้วใส่ยอดนับจริงและค่าการใช้งานทีหลัง</span><div><button class="primary stockSeed" type="button" ${S.canWrite&&S.db?'':'disabled'}>สร้างรายการตั้งต้น</button></div>`:'กำลังโหลด…'}</div></td></tr>`;
+  }else{
+    $('stockBody').innerHTML=shown.length?shown.map(({it,c})=>`<tr class="${c.status==='crit'?'crit':c.status==='reorder'?'reorder':''}" data-kid="${esc(it.id)}" tabindex="0"><td><span class="code">${esc(it.code)}</span><span class="nm">${esc(it.name)}${it.machBrand||it.machModel?' · '+esc([it.machBrand,it.machModel].filter(Boolean).join(' ')):''}</span></td><td class="num"><b>${fmt(c.on,it.unit)}</b> ${esc(it.unit)}${gauge(it,c)}</td><td class="num">${c.ready?fmt(c.ss,it.unit):'—'}</td><td class="num">${c.ready?fmt(c.rop,it.unit):'—'}</td><td class="num">${c.ready?(Number.isFinite(c.cover)?Math.floor(c.cover)+' วัน':'—'):'—'}</td><td><span class="pill ${ST[c.status][1]}">${ST[c.status][0]}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">ไม่พบรายการที่ตรงกับการค้นหา</td></tr>`;
+  }
+  renderCount();
+  if(S.ksel)renderKSheet();
+}
+function renderCount(){
+  const cat=$('countCat').value;const keep={};document.querySelectorAll('#countBody input').forEach(i=>{if(i.value!=='')keep[i.dataset.cid]=i.value});
+  const its=S.stock.filter(i=>!cat||i.cat===cat).sort((a,b)=>a.code.localeCompare(b.code,undefined,{numeric:true}));
+  $('countBody').innerHTML=its.length?its.map(it=>`<tr style="cursor:default"><td><span class="code">${esc(it.code)}</span><span class="nm">${esc(it.name)}</span></td><td class="num">${fmt(num(it.onHand),it.unit)} ${esc(it.unit)}</td><td class="num"><input type="number" min="0" step="any" id="cnt-${esc(it.id)}" data-cid="${esc(it.id)}" value="${esc(keep[it.id]??'')}" aria-label="นับได้จริง ${esc(it.code)}"></td><td class="sub" style="color:var(--muted);font-size:.84rem">${it.lastCountAt?dmy(it.lastCountAt.slice(0,10)):'ยังไม่เคยนับ'}</td></tr>`).join(''):`<tr><td colspan="4" class="empty">ไม่มีรายการในหมวดนี้</td></tr>`;
+}
+
+/* stock form */
+$('kCat').innerHTML=SCATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+$('kUnit').innerHTML=UNITS.map(u=>`<option>${u}</option>`).join('');
+$('stockCat').innerHTML=`<option value="">ทุกหมวด</option>`+SCATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+$('countCat').innerHTML=`<option value="">ทุกหมวด</option>`+SCATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+$('countBy').value=store.get('msc:name');$('kBy').value=store.get('msc:name');
+function formItem(){return {usageAvg:$('kAvg').value,usageMax:$('kMax').value,leadDays:$('kLead').value,ssMode:$('kSsMode').value,ssManual:$('kSs').value,maxStock:$('kMaxStock').value,onHand:$('kOnHand').value,unit:$('kUnit').value}}
+function calcBlocks(it,c){
+  if(!c.ready)return `<div><span class="k">ต้องใส่ก่อนคำนวณ</span><span class="fx">lead time + ใช้เฉลี่ย/เดือน (ของสึกหรอ) หรือ Safety stock กำหนดเอง (เครื่องมือวัด, ประแจ)</span></div>`;
+  const u=it.unit;
+  const ssFx=it.ssMode==='manual'?'กำหนดเอง':`(${fmt(c.dmax*30,u)} − ${fmt(c.avg,u)}) ÷ 30 × ${fmt(c.lead)} วัน`;
+  return `<div><span class="k">ใช้ต่อวัน</span><span class="v">${c.daily.toLocaleString('th-TH',{maximumFractionDigits:2})}</span><span class="fx">${fmt(c.avg,u)} ÷ 30</span></div>
+    <div><span class="k">Safety stock</span><span class="v">${fmt(c.ss,u)} ${esc(u)}</span><span class="fx">${ssFx}</span></div>
+    <div><span class="k">จุดสั่งซื้อ (ROP)</span><span class="v">${fmt(c.rop,u)} ${esc(u)}</span><span class="fx">ใช้ต่อวัน × ${fmt(c.lead)} วัน + SS</span></div>
+    <div><span class="k">ถ้าถึงจุดสั่ง ควรสั่ง</span><span class="v">${fmt(Math.max(0,(num(it.maxStock)>c.rop?num(it.maxStock):roundUp(c.rop+Math.max(c.avg,1),u))-c.rop),u)} ${esc(u)}</span><span class="fx">${num(it.maxStock)>c.rop?'เติมถึงสต็อกสูงสุด':(c.avg>0?'ROP + ใช้ 1 เดือน − คงเหลือ':'เติมให้เกินขั้นต่ำ 1 หน่วย')}</span></div>`}
+function renderPreview(){const it=formItem();$('kPreview').innerHTML=calcBlocks(it,calc(it));
+  $('kSsWrap').hidden=$('kSsMode').value!=='manual';
+  const w=$('kSsMode').value==='calc'&&num($('kMax').value)<=num($('kAvg').value)&&num($('kAvg').value)>0;
+  if(!num($('kAvg').value)&&$('kSsMode').value==='calc')$('kPreview').insertAdjacentHTML('beforeend',`<div style="grid-column:1/-1"><span class="k" style="color:var(--accent);font-weight:600">ยังไม่รู้การใช้ต่อเดือน?</span><span class="fx" style="font-family:var(--f-body);font-size:.82rem">เลือก Safety stock "กำหนดเอง" ใส่จำนวนขั้นต่ำที่อยากมีติดไว้ กับ lead time แล้วนับสต็อกจริงทุกสัปดาห์ ครบ 30 วันระบบจะเสนอการใช้เฉลี่ยจริง ครบ 60 วันได้ค่าสูงสุด</span></div>`);
+  if(w)$('kPreview').insertAdjacentHTML('beforeend',`<div><span class="k" style="color:var(--warn)">Safety stock เป็น 0</span><span class="fx">ใส่การใช้สูงสุดต่อเดือนให้มากกว่าค่าเฉลี่ย หรือกำหนดเอง</span></div>`)}
+['kAvg','kMax','kLead','kSs','kMaxStock','kOnHand'].forEach(id=>$(id).addEventListener('input',renderPreview));
+['kSsMode','kUnit'].forEach(id=>$(id).addEventListener('change',renderPreview));
+function resetStockForm(){kEditing=null;$('stockForm').reset();$('kCode').disabled=false;$('kOnHand').disabled=false;$('kSubmit').textContent='เพิ่มรายการ';$('kCancel').hidden=true;renderPreview();kSetMach('','');kSyncMach()}
+function kFillB(sel){$('kBrand').innerHTML=opts(machPairs().map(p=>p[0]),sel,'แบรนด์');$('kBrandNew').hidden=true;$('kBrandNew').value=''}
+function kFillM(b,sel){$('kModel').innerHTML=opts(machPairs().filter(p=>p[0]===b).map(p=>p[1]),sel,'รุ่น');$('kModelNew').hidden=true;$('kModelNew').value=''}
+function kSetMach(b,m){kFillB(b);kFillM(b,m)}
+const kBrandVal=()=>$('kBrand').value===NEW?$('kBrandNew').value.trim():$('kBrand').value;
+const kModelVal=()=>$('kModel').value===NEW?$('kModelNew').value.trim():$('kModel').value;
+$('kBrand').addEventListener('change',()=>{const n=$('kBrand').value===NEW;$('kBrandNew').hidden=!n;
+  const b=n?'':$('kBrand').value,ms=machPairs().filter(p=>p[0]===b&&b).map(p=>p[1]);kFillM(b,ms.length===1?ms[0]:'');
+  if(n){$('kModel').value=NEW;$('kModelNew').hidden=false;$('kBrandNew').focus()}});
+$('kModel').addEventListener('change',()=>{const n=$('kModel').value===NEW;$('kModelNew').hidden=!n;if(n)$('kModelNew').focus()});
+function kSyncMach(){const sp=SPARE_CATS.includes($('kCat').value);$('kMachRow').hidden=!sp;if(sp&&!$('kBrand').options.length)kSetMach('','')}
+$('kCat').addEventListener('change',kSyncMach);
+kSyncMach();
+$('kCancel').addEventListener('click',resetStockForm);
+$('stockForm').addEventListener('submit',e=>{e.preventDefault();
+  const code=$('kCode').value.trim().toUpperCase(),name=$('kName').value.trim();if(!code||!name)return;
+  if(S.stock.some(i=>i.code===code&&i.id!==kEditing)){toast('รหัส '+code+' มีอยู่แล้ว');return}
+  let id=kEditing||docId(code);if(!kEditing&&S.stock.some(i=>i.id===id))id=docId(code)+'-'+Date.now().toString(36);
+  const body={name,cat:$('kCat').value,unit:$('kUnit').value,usageAvg:num($('kAvg').value),usageMax:num($('kMax').value),leadDays:num($('kLead').value),ssMode:$('kSsMode').value,ssManual:num($('kSs').value),maxStock:num($('kMaxStock').value),loc:$('kLoc').value.trim(),note:$('kNote').value.trim(),machBrand:SPARE_CATS.includes($('kCat').value)?kBrandVal():'',machModel:SPARE_CATS.includes($('kCat').value)?kModelVal():''};
+  run($('kSubmit'),async()=>{
+    if(kEditing)await S.db.doc('stock/'+id).update({code,...body});
+    else{const on=num($('kOnHand').value);const now=new Date().toISOString();
+      await S.db.doc('stock/'+id).set({code,...body,onHand:on,lastCountAt:on>0?now:'',createdAt:now});
+      if(on>0)await S.db.collection('moves').add({ts:now,itemId:id,code,type:'count',qty:on,before:0,after:on,baseline:true,by:store.get('msc:name')||'—',note:'ยอดตั้งต้น'})}
+    const was=!!kEditing;resetStockForm();toast(was?'แก้ไขค่าตั้งแล้ว':'เพิ่ม '+code+' แล้ว')})});
+
+/* table + search */
+$('stockSearch').addEventListener('input',renderStock);
+$('stockCat').addEventListener('change',renderStock);
+$('countCat').addEventListener('change',renderCount);
+$('stockBody').addEventListener('click',e=>{const tr=e.target.closest('tr[data-kid]');if(tr)openK(tr.dataset.kid)});
+$('stockBody').addEventListener('keydown',e=>{if(e.key==='Enter'){const tr=e.target.closest('tr[data-kid]');if(tr)openK(tr.dataset.kid)}});
+document.addEventListener('click',e=>{const b=e.target.closest('.stockSeed');if(!b)return;
+  run(b,async()=>{const now=new Date().toISOString();for(const [code,name,cat,unit] of STOCK_STARTER)await S.db.doc('stock/'+docId(code)).set({code,name,cat,unit,onHand:0,usageAvg:0,usageMax:0,leadDays:0,ssMode:'calc',ssManual:0,maxStock:0,loc:'',note:'',lastCountAt:'',createdAt:now})},'สร้างรายการตั้งต้นแล้ว ใส่ยอดนับจริงและค่าการใช้งานต่อได้เลย')});
+
+/* order copy */
+$('copyOrder').addEventListener('click',()=>{
+  const need=S.stock.map(it=>({it,c:calc(it)})).filter(r=>r.c.order>0);
+  const txt=`รายการสั่งซื้อ Machine Shop (${new Date().toLocaleDateString('th-TH')})\n`+need.map(({it,c})=>`- ${it.code} ${it.name}: ${fmt(c.order,it.unit)} ${it.unit} (คงเหลือ ${fmt(c.on,it.unit)}, จุดสั่งซื้อ ${fmt(c.rop,it.unit)}${it.note?', '+it.note:''})`).join('\n');
+  const ta=$('orderText');ta.value=txt;
+  const fallback=()=>{ta.hidden=false;ta.focus();ta.select();toast('คัดลอกอัตโนมัติไม่ได้ เลือกข้อความแล้วคัดลอกเอง')};
+  try{navigator.clipboard.writeText(txt).then(()=>{ta.hidden=true;toast('คัดลอกรายการสั่งซื้อแล้ว')},fallback)}catch(_){fallback()}});
+
+/* cycle count save */
+$('countSave').addEventListener('click',()=>{
+  const by=$('countBy').value.trim();if(!by){toast('ใส่ชื่อผู้นับ');$('countBy').focus();return}
+  const entries=[...document.querySelectorAll('#countBody input')].filter(i=>i.value!=='').map(i=>({it:S.stock.find(s=>s.id===i.dataset.cid),v:num(i.value)})).filter(x=>x.it);
+  if(!entries.length){toast('ยังไม่ได้ใส่ยอดที่นับ');return}
+  run($('countSave'),async()=>{const now=new Date().toISOString();let diff=0;
+    for(const {it,v} of entries){const before=num(it.onHand);
+      await S.db.doc('stock/'+it.id).update({onHand:v,lastCountAt:now});
+      await S.db.collection('moves').add({ts:now,itemId:it.id,code:it.code,type:'count',qty:v,before,after:v,baseline:!it.lastCountAt,by,note:'นับรอบ'});
+      if(v!==before)diff++}
+    store.set('msc:name',by);document.querySelectorAll('#countBody input').forEach(i=>i.value='');
+    toast(`บันทึกผลนับ ${entries.length} รายการ · ยอดต่างจากระบบ ${diff} รายการ`)})});
+
+/* stock sheet */
+function openK(id){S.ksel=id;$('kConfirm').hidden=true;$('kQty').value='';$('kMoveNote').value='';$('kScrim').hidden=false;renderKSheet();setTimeout(()=>$('kQty').focus(),0)}
+function closeK(){S.ksel=null;$('kScrim').hidden=true}
+const kcur=()=>S.stock.find(i=>i.id===S.ksel);
+function renderKSheet(){const it=kcur();if(!it){closeK();return}const c=calc(it);
+  $('kSCode').textContent=it.code;$('kTitle').textContent=it.name;
+  $('kSInfo').innerHTML=(it.machBrand||it.machModel?`<div>ใช้กับเครื่อง ${esc([it.machBrand,it.machModel].filter(Boolean).join(' '))}</div>`:'')+`<span class="pill ${ST[c.status][1]}">${ST[c.status][0]}</span> คงเหลือ <b>${fmt(c.on,it.unit)} ${esc(it.unit)}</b>${it.loc?' · '+esc(it.loc):''}${it.lastCountAt?' · นับล่าสุด '+dmy(it.lastCountAt.slice(0,10)):''}`;
+  $('kSCalc').innerHTML=calcBlocks(it,c);
+  const a=actualUsage(it);
+  $('kUsage').innerHTML=!a?'':a.perMonth==null?`<div class="sub" style="color:var(--muted);font-size:.85rem">มีข้อมูลการใช้ ${Math.floor(a.span)} วัน นับสต็อกจริงต่อไปทุกสัปดาห์ ครบ 30 วันระบบจะคำนวณการใช้เฉลี่ยให้ ครบ 60 วันจะได้การใช้สูงสุดด้วย</div>`:
+    `<div class="banner" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between"><span>ใช้จริงจากข้อมูล ${Math.floor(a.span)} วัน: <b>${a.perMonth.toLocaleString('th-TH',{maximumFractionDigits:1})} ${esc(it.unit)}/เดือน</b> ${a.maxMonth!=null?` · สูงสุด <b>${a.maxMonth.toLocaleString('th-TH',{maximumFractionDigits:1})}</b>/เดือน`:' · ครบ 60 วันจะได้ค่าสูงสุดด้วย'} (ตั้งไว้ ${c.avg?fmt(c.avg,it.unit):'ยังไม่ได้ใส่'})</span><button class="small" type="button" id="kApplyUsage" data-v="${a.perMonth}" data-m="${a.maxMonth??''}">ใช้ค่านี้</button></div>`;
+  const mv=S.moves.filter(m=>m.itemId===it.id).slice(0,8);
+  const T={in:['รับเข้า','good'],out:['เบิกออก','warn'],count:['นับ','mute']};
+  $('kMoves').innerHTML=mv.length?mv.map((m,ix)=>li(`<span class="pill ${T[m.type][1]}">${T[m.type][0]}</span> ${m.type==='count'?`${fmt(num(m.before),it.unit)} → <b>${fmt(num(m.after),it.unit)}</b>`:`${m.type==='in'?'+':'−'}${fmt(num(m.qty),it.unit)}`} ${esc(it.unit)}`,`${esc(m.by)}${m.note?' · '+esc(m.note):''}`,`<span style="display:flex;gap:6px;align-items:center"><span class="code">${dmy(m.ts.slice(0,10))} ${hm(m.ts)}</span>${ix===0?`<button class="small danger" type="button" id="kUndo" data-mid="${esc(m.id)}">ลบ</button>`:''}</span>`)).join(''):`<div class="empty">ยังไม่มีความเคลื่อนไหว</div>`}
+$('kClose').addEventListener('click',closeK);
+$('kScrim').addEventListener('click',e=>{if(e.target===$('kScrim'))closeK()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('kScrim').hidden)closeK()});
+function move(type,btn){const it=kcur();if(!it)return;const raw=$('kQty').value;const q=num(raw);const by=$('kBy').value.trim();
+  if(raw===''||q<0||(type!=='count'&&q<=0)){toast('ใส่จำนวน');$('kQty').focus();return}
+  if(!by){toast('ใส่ชื่อ');$('kBy').focus();return}
+  const before=num(it.onHand);const after=type==='in'?before+q:type==='out'?before-q:q;
+  if(after<0){toast('เบิกเกินยอดคงเหลือ ('+fmt(before,it.unit)+' '+it.unit+') ให้นับจริงแล้วตั้งยอดใหม่');return}
+  run(btn,async()=>{const now=new Date().toISOString();
+    await S.db.doc('stock/'+it.id).update(type==='count'?{onHand:after,lastCountAt:now}:{onHand:after});
+    await S.db.collection('moves').add({ts:now,itemId:it.id,code:it.code,type,qty:q,before,after,baseline:type==='count'&&!it.lastCountAt,by,note:$('kMoveNote').value.trim()});
+    store.set('msc:name',by);$('kQty').value='';$('kMoveNote').value=''},
+    type==='in'?'รับเข้าแล้ว':type==='out'?'เบิกออกแล้ว':'ตั้งยอดตามที่นับแล้ว')}
+$('kIn').addEventListener('click',()=>move('in',$('kIn')));
+$('kOut').addEventListener('click',()=>move('out',$('kOut')));
+$('kCount').addEventListener('click',()=>move('count',$('kCount')));
+document.addEventListener('click',e=>{const b=e.target.closest('#kApplyUsage');if(!b)return;const it=kcur();if(!it)return;
+  const v=Math.round(num(b.dataset.v)*10)/10,m=b.dataset.m===''?null:Math.round(num(b.dataset.m)*10)/10;
+  const body={usageAvg:v,usageMax:m!=null?Math.max(m,v):Math.max(num(it.usageMax),v)};
+  const sw=m!=null&&m>v&&it.ssMode==='manual';if(sw)body.ssMode='calc';
+  run(b,async()=>{await S.db.doc('stock/'+it.id).update(body)},'อัปเดตการใช้เป็นเฉลี่ย '+v+(m!=null?' สูงสุด '+body.usageMax:'')+' '+it.unit+'/เดือน'+(sw?' และเปลี่ยน Safety stock เป็นแบบคำนวณ':''))});
+$('kEdit').addEventListener('click',()=>{const it=kcur();if(!it)return;kEditing=it.id;
+  $('kCode').value=it.code;$('kName').value=it.name;$('kCat').value=it.cat;$('kUnit').value=it.unit;
+  $('kOnHand').value=num(it.onHand);$('kOnHand').disabled=true;$('kAvg').value=it.usageAvg||'';$('kMax').value=it.usageMax||'';$('kLead').value=it.leadDays||'';
+  $('kSsMode').value=it.ssMode||'calc';$('kSs').value=it.ssManual||'';$('kMaxStock').value=it.maxStock||'';$('kLoc').value=it.loc||'';$('kNote').value=it.note||'';kSetMach(it.machBrand||'',it.machModel||'');kSyncMach();
+  $('kSubmit').textContent='บันทึกการแก้ไข';$('kCancel').hidden=false;$('stockFormPanel').open=true;closeK();show('stock');renderPreview();
+  $('stockFormPanel').scrollIntoView({block:'start'});$('kAvg').focus()});
+$('kDelete').addEventListener('click',()=>{$('kConfirm').hidden=false});
+$('kConfirmNo').addEventListener('click',()=>{$('kConfirm').hidden=true});
+$('kConfirmYes').addEventListener('click',()=>{const it=kcur();if(!it)return;run($('kConfirmYes'),async()=>{await S.db.doc('stock/'+it.id).delete();closeK()},'ลบ '+it.code+' แล้ว')});
+renderPreview();
+
+/* ===== edit / delete history ===== */
+let hsel=null;
+const hcur=()=>S.checks.find(c=>c.id===hsel);
+function hchips(id,arr){$(id).innerHTML=arr.map((v,i)=>`<label class="chk"><input type="checkbox" checked id="${id}-${i}" data-v="${esc(v)}">${esc(v)}</label>`).join('');$(id+'Wrap').hidden=!arr.length}
+function openH(id){hsel=id;const c=hcur();if(!c)return;
+  $('hTitle').textContent='วันที่ '+dmy(c.day)+' · '+hm(c.ts);
+  $('hChecker').value=c.checker||'';$('hNote').value=c.note||'';
+  hchips('hMiss',c.missing||[]);hchips('hDmg',c.damaged||[]);hchips('hTag',c.tagged||[]);hchips('hFail',c.machineFails||[]);
+  $('hMatOk').checked=c.materialOk!==false;$('hMatBad').checked=c.materialOk===false;$('hMatNote').value=c.materialNote||'';
+  $('hBatt').checked=!!c.batteryCharged;$('hArea').checked=!!c.areaOk;
+  $('hConfirm').hidden=true;$('hScrim').hidden=false;setTimeout(()=>$('hChecker').focus(),0)}
+function closeH(){hsel=null;$('hScrim').hidden=true}
+async function revertMissing(c,codes){for(const code of codes){const it=S.items.find(i=>i.code===code);
+  if(it&&it.status==='missing'&&it.missingSince===c.ts)await S.db.doc('items/'+it.id).update({status:'in',missingSince:''})}}
+async function revertDmg(c,codes){for(const code of codes){const it=S.items.find(i=>i.code===code);
+  if(it&&it.status==='damaged'&&it.damagedSince===c.ts)await S.db.doc('items/'+it.id).update({status:'in',damagedSince:''})}}
+$('checkHist').addEventListener('click',e=>{const b=e.target.closest('[data-hedit]');if(b)openH(b.dataset.hedit)});
+$('hClose').addEventListener('click',closeH);
+$('hScrim').addEventListener('click',e=>{if(e.target===$('hScrim'))closeH()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('hScrim').hidden)closeH()});
+$('hSave').addEventListener('click',()=>{const c=hcur();if(!c)return;
+  const checker=$('hChecker').value.trim();if(!checker){toast('ใส่ชื่อผู้ตรวจ');$('hChecker').focus();return}
+  const kept=id=>[...document.querySelectorAll('#'+id+' input')].filter(i=>i.checked).map(i=>i.dataset.v);
+  const missing=kept('hMiss'),removed=(c.missing||[]).filter(x=>!missing.includes(x)),matBad=$('hMatBad').checked;
+  const damaged=kept('hDmg'),removedD=(c.damaged||[]).filter(x=>!damaged.includes(x));
+  run($('hSave'),async()=>{await revertMissing(c,removed);await revertDmg(c,removedD);
+    await S.db.doc('checks/'+c.id).update({checker,note:$('hNote').value.trim(),missing,damaged,tagged:kept('hTag'),machineFails:kept('hFail'),materialOk:!matBad,materialNote:matBad?$('hMatNote').value.trim():'',batteryCharged:$('hBatt').checked,areaOk:$('hArea').checked,editedAt:new Date().toISOString()});
+    closeH()},removed.length?'แก้ไขแล้ว · '+removed.join(', ')+' กลับเป็นอยู่ที่บอร์ด':'แก้ไขผลตรวจแล้ว')});
+$('hDelete').addEventListener('click',()=>{const c=hcur();if(!c)return;const n=(c.missing||[]).length;
+  $('hConfirmText').textContent='ลบผลตรวจวันที่ '+dmy(c.day)+' ถาวร?'+(n+(c.damaged||[]).length?' ของที่บันทึกว่าขาดหรือชำรุดในรอบนี้จะกลับเป็นอยู่ที่บอร์ด':'');$('hConfirm').hidden=false});
+$('hConfirmNo').addEventListener('click',()=>{$('hConfirm').hidden=true});
+$('hConfirmYes').addEventListener('click',()=>{const c=hcur();if(!c)return;
+  run($('hConfirmYes'),async()=>{await revertMissing(c,c.missing||[]);await revertDmg(c,c.damaged||[]);await S.db.doc('checks/'+c.id).delete();closeH()},'ลบผลตรวจแล้ว')});
+
+/* undo latest stock movement */
+document.addEventListener('click',e=>{const b=e.target.closest('#kUndo');if(!b)return;
+  const it=kcur(),m=S.moves.find(x=>x.id===b.dataset.mid);if(!it||!m)return;
+  if(num(it.onHand)!==num(m.after)){toast('ยอดคงเหลือเปลี่ยนไปหลังรายการนี้ ให้นับจริงแล้วตั้งยอดใหม่แทน');return}
+  if(b.dataset.armed!=='1'){b.dataset.armed='1';b.textContent='กดอีกครั้งเพื่อลบ';return}
+  run(b,async()=>{const body={onHand:num(m.before)};
+    if(m.type==='count'){const prev=S.moves.find(x=>x.itemId===it.id&&x.type==='count'&&x.id!==m.id&&x.ts<m.ts);body.lastCountAt=prev?prev.ts:''}
+    await S.db.doc('stock/'+it.id).update(body);await S.db.doc('moves/'+m.id).delete()},'ลบรายการแล้ว ยอดกลับเป็น '+fmt(num(m.before),it.unit)+' '+it.unit)});
+
+/* machine models */
+function applyModels(){renderCatOptions();renderMach();renderAll()}
+
+/* board UI: search, mode, collapsible groups */
+function setMode(m){S.mode=m;$('modeMiss').setAttribute('aria-pressed',m==='missing');$('modeTag').setAttribute('aria-pressed',m==='tag');$('modeDmg').setAttribute('aria-pressed',m==='damaged')}
+$('modeDmg').addEventListener('click',()=>setMode('damaged'));
+$('modeMiss').addEventListener('click',()=>setMode('missing'));
+$('modeTag').addEventListener('click',()=>setMode('tag'));
+$('qCheck').addEventListener('input',e=>{S.q.check=e.target.value;$('checkBoard').innerHTML=boardHTML('check')});
+$('qTools').addEventListener('input',e=>{S.q.tools=e.target.value;$('board').innerHTML=boardHTML('tools')});
+document.addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.matches('details.board-group')){const mode=d.dataset.k.split(':')[0];if(!(S.q[mode]||'').trim())S.open[d.dataset.k]=d.open}},true);
+$('goSave').addEventListener('click',()=>{$('st4').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});setTimeout(()=>{if(!$('cName').value)$('cName').focus()},300)});
+
+renderMach();renderAll();
+
+/* data */
+(async()=>{
+  const db=await window.claude?.use?.('db');
+  if(!db){const b=$('dbBanner');b.hidden=false;b.textContent='มุมมองนี้เชื่อมต่อฐานข้อมูลไม่ได้ เปิดหน้านี้จาก claude.ai ขณะลงชื่อเข้าใช้ เพื่อบันทึกและดูข้อมูลร่วมกัน';S.loaded=true;S.loadedStock=true;renderAll();return}
+  S.db=db;
+  try{const user=await window.claude.use('user');const w=user?await user.can('data.write'):null;if(w===false){S.canWrite=false;const b=$('dbBanner');b.hidden=false;b.textContent='บัญชีนี้ดูข้อมูลได้อย่างเดียว ขอสิทธิ์ Contributor จากเจ้าของหน้า เพื่อบันทึกได้'}}catch(_){}
+  const onErr=e=>{if(e&&e.code==='revoked'){const b=$('dbBanner');b.hidden=false;b.textContent='สิทธิ์เข้าถึงข้อมูลถูกเปลี่ยน รีโหลดหน้าเพื่อเชื่อมต่อใหม่'}};
+  db.collection('items').onSnapshot(s=>{S.items=s.docs.map(d=>({id:d.id,...d.data()}));S.loaded=true;renderAll()},onErr);
+  db.collection('checks').orderBy('day','desc').limit(60).onSnapshot(s=>{S.checks=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},onErr);
+  db.doc('config/machines').onSnapshot(d=>{S.models=d.exists?{...d.data()}:{};applyModels()},onErr);
+  db.collection('stock').onSnapshot(s=>{S.stock=s.docs.map(d=>({id:d.id,...d.data()}));S.loadedStock=true;renderStock()},onErr);
+  db.collection('moves').orderBy('ts','desc').limit(1000).onSnapshot(s=>{S.moves=s.docs.map(d=>({id:d.id,...d.data()}));if(S.ksel)renderKSheet()},onErr);
+})();
+</script>
+</body></html>

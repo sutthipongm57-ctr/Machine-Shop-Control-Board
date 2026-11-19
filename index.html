@@ -1,24 +1,32 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Machine Shop Control Board</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* Layout: one technician, one evening check. Sticky tab bar; the check is a 4-step column; tools drawn as a shadow board where an empty slot is the signal. */
 :root{
   --bg:#ECEFEE; --surface:#FAFBFA; --sunk:#E2E6E5; --ink:#1B2124; --muted:#5A6469; --line:#CDD3D2;
-  --accent:#2348A6; --accent-ink:#FFFFFF; --good:#2E7D4F; --warn:#A86E12; --bad:#C2362F;
+  --accent:#2348A6; --accent-ink:#FFFFFF; --good:#2E7D4F; --warn:#A86E12; --bad:#C2362F; --dmg:#7445A8;
   --f-display:"Chakra Petch","IBM Plex Sans Thai",system-ui,sans-serif;
   --f-body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#111518; --surface:#192024; --sunk:#141A1D; --ink:#E5EAEB; --muted:#97A2A7; --line:#2C353A;
-  --accent:#7E9DEB; --accent-ink:#0D1631; --good:#5FBF87; --warn:#E0A83E; --bad:#EF6A60; color-scheme:dark}}
+  --accent:#7E9DEB; --accent-ink:#0D1631; --good:#5FBF87; --warn:#E0A83E; --bad:#EF6A60; --dmg:#B997E8; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#111518; --surface:#192024; --sunk:#141A1D; --ink:#E5EAEB; --muted:#97A2A7; --line:#2C353A;
-  --accent:#7E9DEB; --accent-ink:#0D1631; --good:#5FBF87; --warn:#E0A83E; --bad:#EF6A60; color-scheme:dark}
+  --accent:#7E9DEB; --accent-ink:#0D1631; --good:#5FBF87; --warn:#E0A83E; --bad:#EF6A60; --dmg:#B997E8; color-scheme:dark}
 
 *{box-sizing:border-box}
+html{scrollbar-gutter:stable}
+@supports not (scrollbar-gutter:stable){html{overflow-y:scroll}}
+main{min-height:calc(100vh - 120px)}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
 .wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -37,7 +45,7 @@ main{padding-block:20px 48px}
 section.tab{display:flex;flex-direction:column;gap:20px}
 h2{font-family:var(--f-display);font-weight:600;font-size:1.15rem;margin:0;text-wrap:balance}
 h3{font-family:var(--f-display);font-weight:600;font-size:1rem;margin:0}
-.lead{color:var(--muted);margin:4px 0 0;max-width:62ch}
+.lead{color:var(--muted);margin:4px 0 0;max-width:none}
 .eyebrow{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
@@ -50,7 +58,7 @@ h3{font-family:var(--f-display);font-weight:600;font-size:1rem;margin:0}
 .stat .l{font-size:.85rem;color:var(--muted)}
 .stat.bad .n{color:var(--bad)} .stat.warn .n{color:var(--warn)} .stat.good .n{color:var(--good)}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);flex:1 1 160px}
-input[type=text],select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+input[type=text],input[type=search],select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
 input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible,.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .checks{display:flex;flex-wrap:wrap;gap:8px}
 .chk{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);cursor:pointer;font-size:.9rem;color:var(--ink)}
@@ -98,6 +106,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .tile.mark-tag .h{color:var(--warn)}
 .tile.mark-found{border-color:var(--good);border-width:2px;border-style:solid;background:color-mix(in srgb,var(--good) 12%,var(--surface))}
 .tile.mark-found .h{color:var(--good)}
+.tile.damaged{border-style:dashed;border-color:var(--dmg);background:repeating-linear-gradient(135deg,transparent 0 7px,color-mix(in srgb,var(--dmg) 11%,transparent) 7px 8px)}
+.tile.damaged .h{color:var(--dmg)}
+.tile.mark-dmg{border-color:var(--dmg);border-width:2px;background:color-mix(in srgb,var(--dmg) 13%,var(--surface))}
+.tile.mark-dmg .h{color:var(--dmg)}
+.pill.dmg{color:var(--dmg);background:color-mix(in srgb,var(--dmg) 14%,transparent)}
+.seg #modeDmg i{background:var(--dmg)}
+.seg #modeDmg[aria-pressed="true"]{background:color-mix(in srgb,var(--dmg) 15%,var(--surface));color:var(--ink);font-weight:600}
+.savebar .sv .dmg{color:color-mix(in srgb,var(--dmg) 50%,var(--surface))}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem;color:var(--muted)}
 .legend i{display:inline-block;width:14px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle;border:1.5px solid var(--line)}
 .legend i.t{border:1.5px dashed var(--warn)} .legend i.m{border:2px solid var(--bad)} .legend i.p{border:1.5px dashed var(--bad)}
@@ -113,8 +129,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .mach .panel{gap:6px;padding:12px 14px}
 .mach .panel.ok{border-color:color-mix(in srgb,var(--good) 55%,var(--line))}
 .mach .panel.skip{opacity:.62}
-.mach .mh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.mach .skipbtn{font-size:.8rem;padding:2px 10px}
+.mach .mh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:nowrap;min-height:30px}
+.mach .mh h3{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;line-height:1.3}
+.mach .skipbtn{font-size:.8rem;padding:2px 10px;flex:0 0 auto;white-space:nowrap}
 .mach .skipbtn[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .mach label{display:flex;gap:8px;align-items:flex-start;font-size:.9rem;cursor:pointer}
 .mach input{accent-color:var(--good);width:17px;height:17px;margin-top:3px;flex:0 0 auto}
@@ -148,21 +165,82 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
 .calc .v{font-family:var(--f-display);font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums}
 .calc .k{font-size:.78rem;color:var(--muted)}
 .calc .fx{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);overflow-wrap:anywhere}
+nav.tabs svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;margin-right:6px}
+nav.tabs a{padding:8px 12px}
+.tile .c{overflow-wrap:anywhere;word-break:break-word;line-height:1.3}
+.tile{min-height:68px;padding:10px 10px 9px}
+.slots{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
+details.board-group{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:0 12px}
+details.board-group[open]{padding-bottom:12px}
+details.board-group>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 0;min-height:44px}
+details.board-group>summary::-webkit-details-marker{display:none}
+details.board-group .gt{display:flex;align-items:center;gap:8px;min-width:0}
+details.board-group .gt .eyebrow{color:var(--ink)}
+details.board-group .chev{width:14px;height:14px;flex:0 0 auto;fill:none;stroke:var(--muted);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+@media (prefers-reduced-motion:no-preference){details.board-group .chev{transition:transform .15s}}
+details.board-group[open] .chev{transform:rotate(90deg)}
+details.board-group .gc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;font-size:.8rem;color:var(--muted);white-space:nowrap}
+.board{gap:10px}
+.tile .tile-x{display:none}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.toolbar input{flex:1 1 200px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface);flex:0 0 auto}
+.seg button{border:0;border-radius:0;padding:9px 14px;background:transparent;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button i{display:inline-block;width:10px;height:10px;border-radius:2px}
+.seg #modeMiss i{background:var(--bad)} .seg #modeTag i{background:var(--warn)}
+.seg #modeMiss[aria-pressed="true"]{background:color-mix(in srgb,var(--bad) 14%,var(--surface));color:var(--ink);font-weight:600}
+.seg #modeTag[aria-pressed="true"]{background:color-mix(in srgb,var(--warn) 16%,var(--surface));color:var(--ink);font-weight:600}
+.hint{font-size:.84rem;color:var(--muted);margin:0}
+@media (max-width:560px){.step{grid-template-columns:1fr;gap:8px}.step .num{width:28px;height:28px;font-size:.9rem}.slots{grid-template-columns:repeat(auto-fill,minmax(112px,1fr))}details.board-group{padding:0 10px}}
+.savebar{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:4;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--ink);color:var(--surface);border-radius:12px;padding:10px 10px 10px 16px;box-shadow:0 8px 24px rgb(0 0 0 / .22)}
+.savebar .sv{display:flex;gap:14px;flex-wrap:wrap;font-size:.88rem}
+.savebar .sv b{font-family:var(--f-display);font-size:1.05rem;margin-right:3px;font-variant-numeric:tabular-nums}
+.savebar .sv .bad{color:color-mix(in srgb,var(--bad) 55%,var(--surface))}
+.savebar .sv .warn{color:color-mix(in srgb,var(--warn) 55%,var(--surface))}
+.savebar button{background:var(--surface);color:var(--ink);border-color:var(--surface);font-weight:600}
+.empty-q{color:var(--muted);font-size:.9rem;padding:12px;border:1px dashed var(--line);border-radius:10px;text-align:center}
+body:not(.is-admin) .admin-only{display:none!important}
+.userbox{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.85rem}
+.userbox .who{display:flex;flex-direction:column;line-height:1.2;text-align:right}
+.userbox .who b{font-weight:600}
+.userbox .who span{color:var(--muted);font-size:.78rem}
+.auth{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));overflow:auto}
+.auth .card{width:min(400px,100%);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 24px;display:flex;flex-direction:column;gap:14px}
+.auth h1{font-family:var(--f-display);font-weight:600;font-size:1.35rem;margin:0}
+.auth h1 span{color:var(--accent)}
+.auth .err{color:var(--bad);font-size:.88rem;min-height:1.2em;margin:0}
+.auth label.f,#pinScrim label.f{flex:0 0 auto}
+input[type=password]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%;min-width:0}
+input[type=password]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.auth input{font-size:1.05rem;padding:11px 12px}
+.auth button.primary{padding:11px 14px;font-size:1rem}
+.pinin{letter-spacing:.35em;font-family:var(--f-mono)}
+table.users{border-collapse:collapse;width:100%;font-size:.9rem;min-width:560px}
+table.users th,table.users td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.users th{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+table.users select{width:auto;padding:4px 8px}
 @media (prefers-reduced-motion:no-preference){.tile,button{transition:background-color .12s,border-color .12s}}
 </style>
-
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+</head>
+<body>
 <header class="top">
   <div class="wrap">
     <div class="brand">
       <h1>Machine Shop <span>Control Board</span></h1>
-      <div class="date" id="today"></div>
+      <div class="userbox"><div class="date" id="today"></div><div class="who" id="whoBox" hidden><b id="whoName"></b><span id="whoRole"></span></div><button class="small" type="button" id="pinBtn" hidden>เปลี่ยน PIN</button><button class="small" type="button" id="logoutBtn" hidden>ออกจากระบบ</button></div>
     </div>
     <nav class="tabs" aria-label="เมนู">
-      <a href="#stock" data-tab="stock">สต็อก <span class="badge" id="badgeReorder" hidden></span></a>
-      <a href="#check" data-tab="check">ตรวจก่อนกลับ</a>
-      <a href="#summary" data-tab="summary">สรุป <span class="badge" id="badgeMissing" hidden></span></a>
-      <a href="#tools" data-tab="tools">จัดการบอร์ด</a>
-      <a href="#history" data-tab="history">ประวัติ</a>
+      <a href="#stock" data-tab="stock"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4zm0 0v10l9 4 9-4V7M12 11v10"/></svg>สต็อก <span class="badge" id="badgeReorder" hidden></span></a>
+      <a href="#check" data-tab="check"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>ตรวจก่อนกลับ</a>
+      <a href="#summary" data-tab="summary"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6M3 20h18"/></svg>สรุป <span class="badge" id="badgeMissing" hidden></span></a>
+      <a href="#tools" data-tab="tools"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>จัดการบอร์ด</a>
+      <a href="#users" data-tab="users" class="admin-only"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20M10 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM20 20v-1.5a3.5 3.5 0 0 0-2.5-3.4M15.5 4.2a3.5 3.5 0 0 1 0 6.6"/></svg>ผู้ใช้</a>
+      <a href="#history" data-tab="history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M3.5 12a8.5 8.5 0 1 0 2.5-6L3.5 8.5M3.5 3.5v5h5"/></svg>ประวัติ</a>
     </nav>
   </div>
 </header>
@@ -203,13 +281,13 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
       <p class="lead" style="margin:0">นับสัปดาห์ละหมวด ใส่จำนวนที่นับได้จริง ช่องที่เว้นว่างจะไม่เปลี่ยน ส่วนต่างจากยอดในระบบจะถูกนับเป็นการใช้งาน และใช้คำนวณอัตราใช้จริง</p>
       <div class="row">
         <label class="f" style="flex:0 1 260px">หมวดที่นับ<select id="countCat"></select></label>
-        <label class="f" style="flex:0 1 200px">ผู้นับ<input type="text" id="countBy"></label>
+        <label class="f" style="flex:0 1 200px">ผู้นับ<input type="text" id="countBy" readonly></label>
       </div>
       <div class="tablewrap"><table class="stock"><thead><tr><th>รายการ</th><th class="num">ยอดในระบบ</th><th class="num">นับได้จริง</th><th>นับล่าสุด</th></tr></thead><tbody id="countBody"></tbody></table></div>
       <div class="row"><button class="primary" type="button" id="countSave">บันทึกผลนับ</button></div>
     </details>
 
-    <details class="panel" id="stockFormPanel">
+    <details class="panel admin-only" id="stockFormPanel">
       <summary><h3 style="display:inline">เพิ่ม / แก้ไขรายการสต็อก</h3></summary>
       <form id="stockForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="off">
         <div class="row">
@@ -260,11 +338,15 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
 
     <div class="step" id="st1"><span class="num">1</span><div>
       <h3>เครื่องมือบนบอร์ด</h3>
-      <div class="legend">
-        <span><i class="m"></i>แตะ 1 ครั้ง = ขาด ไม่มีป้าย</span>
-        <span><i class="t"></i>แตะ 2 ครั้ง = มีป้ายแขวน (ยืมอยู่)</span>
-        <span><i class="p"></i>หายค้าง แตะเมื่อเจอคืน</span>
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="แตะช่องเพื่อบันทึกเป็น">
+          <button type="button" id="modeMiss" aria-pressed="true"><i></i>ขาด</button>
+          <button type="button" id="modeTag" aria-pressed="false"><i></i>ยืมอยู่</button>
+          <button type="button" id="modeDmg" aria-pressed="false"><i></i>ชำรุด</button>
+        </div>
+        <input type="search" id="qCheck" placeholder="ค้นหารหัส ชื่อ หรือ S/N" aria-label="ค้นหาเครื่องมือ">
       </div>
+      <p class="hint">เลือก "ขาด" "ยืมอยู่" หรือ "ชำรุด" แล้วแตะช่องนั้น แตะซ้ำเพื่อยกเลิก · ช่องเส้นประแดง = หายค้าง แตะเมื่อเจอคืน · ช่องเส้นประม่วง = ชำรุดรอซ่อม แตะเมื่อซ่อมแล้ว</p>
       <div class="board" id="checkBoard"></div>
     </div></div>
 
@@ -290,11 +372,12 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
       <h3>สรุปและบันทึก</h3>
       <div id="checkSummary"></div>
       <div class="row">
-        <label class="f">ผู้ตรวจ<input type="text" id="cName" required></label>
+        <label class="f">ผู้ตรวจ<input type="text" id="cName" readonly></label>
         <label class="f">หมายเหตุ / alarm ที่พบ<input type="text" id="cNote" placeholder="เช่น Milling มีเสียงผิดปกติตอนบ่าย"></label>
       </div>
       <div class="row"><button class="primary" id="cSubmit" type="button">บันทึกผลตรวจ</button></div>
     </div></div>
+    <div class="savebar" id="saveBar"><div class="sv" id="saveSv"></div><button type="button" id="goSave">ไปบันทึกผล</button></div>
   </section>
 
   <!-- SUMMARY -->
@@ -306,6 +389,7 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
     <div class="stats" id="stats"></div>
     <div class="grid2">
       <div class="panel"><h3>ของหายค้างตอนนี้</h3><div class="list" id="sumMissing"></div></div>
+      <div class="panel"><h3>ชำรุดรอซ่อม / เปลี่ยน</h3><div class="list" id="sumDmg"></div></div>
       <div class="panel"><h3>หายบ่อยที่สุด</h3><div class="list" id="sumFreq"></div></div>
       <div class="panel"><h3>ยืมนาน (มีป้ายติดกัน 3 วันขึ้นไป)</h3><div class="list" id="sumLong"></div></div>
       <div class="panel"><h3>เครื่องจักรที่ไม่ผ่านบ่อย</h3><div class="list" id="sumMach"></div></div>
@@ -318,8 +402,9 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
       <h2>จัดการบอร์ดเครื่องมือ</h2>
       <p class="lead">เพิ่ม แก้ไข หรือลบรายการ แตะช่องเพื่อดูรายละเอียด หรือบันทึกว่าเจอของที่หายแล้ว</p>
     </div>
+    <input type="search" id="qTools" placeholder="ค้นหารหัส ชื่อ หรือ S/N" aria-label="ค้นหาเครื่องมือ">
     <div class="board" id="board"></div>
-    <details class="panel" id="addPanel">
+    <details class="panel admin-only" id="addPanel">
       <summary><h3 style="display:inline">เพิ่ม / แก้ไขรายการเครื่องมือ</h3></summary>
       <form id="itemForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="off">
         <div class="row">
@@ -345,11 +430,45 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
     </details>
   </section>
 
+  <!-- USERS -->
+  <section class="tab admin-only" id="tab-users" hidden>
+    <div>
+      <h2>ผู้ใช้งาน</h2>
+      <p class="lead">สร้างบัญชีให้ช่างด้วยรหัสพนักงานและ PIN 6 หลัก ช่าง (Technician) ตรวจก่อนกลับ นับสต็อก รับเข้า-เบิกออก และแจ้งของหายหรือชำรุดได้ ส่วนหัวหน้า (Admin) ทำได้ทุกอย่าง รวมถึงแก้รายการ ลบประวัติ และจัดการผู้ใช้</p>
+    </div>
+    <div class="panel">
+      <h3>เพิ่มผู้ใช้</h3>
+      <form id="userForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="off">
+        <div class="row">
+          <label class="f">รหัสพนักงาน<input type="text" id="uEmp" required placeholder="เช่น 10234" autocapitalize="characters"></label>
+          <label class="f" style="flex:2 1 220px">ชื่อที่แสดง<input type="text" id="uName" required placeholder="เช่น สมชาย ใจดี"></label>
+        </div>
+        <div class="row">
+          <label class="f">PIN เริ่มต้น (6 หลัก)<input type="password" id="uPin" class="pinin" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required autocomplete="new-password"></label>
+          <label class="f">สิทธิ์<select id="uRole"><option value="tech">ช่าง (Technician)</option><option value="admin">หัวหน้า (Admin)</option></select></label>
+        </div>
+        <div class="row"><button class="primary" type="submit" id="uSubmit">สร้างบัญชี</button></div>
+      </form>
+    </div>
+    <div class="panel">
+      <h3>รายชื่อผู้ใช้</h3>
+      <div class="tablewrap"><table class="users"><thead><tr><th>รหัสพนักงาน</th><th>ชื่อ</th><th>สิทธิ์</th><th>สถานะ</th></tr></thead><tbody id="userBody"></tbody></table></div>
+      <p class="hint">ถ้าช่างลืม PIN: ปิดใช้งานบัญชีเดิม แล้วลบบัญชีใน Firebase Console (Authentication) ก่อนสร้างบัญชีใหม่ด้วยรหัสพนักงานเดิม</p>
+    </div>
+    <details class="panel">
+      <summary><h3 style="display:inline">นำเข้าข้อมูลจากแอปเดิม</h3></summary>
+      <p class="lead" style="margin:0">เลือกไฟล์ msc-export.json ระบบจะเพิ่มหรือเขียนทับรายการที่มีรหัสเดียวกัน รายการอื่นที่มีอยู่แล้วจะไม่ถูกลบ</p>
+      <div class="row"><input type="file" id="importFile" accept="application/json,.json"></div>
+      <div id="importInfo" class="hint"></div>
+      <div class="row"><button class="primary" type="button" id="importBtn" disabled>นำเข้าข้อมูล</button></div>
+    </details>
+  </section>
+
   <!-- HISTORY -->
   <section class="tab" id="tab-history" hidden>
     <div>
       <h2>ประวัติการตรวจ</h2>
-      <p class="lead">ผลตรวจก่อนกลับย้อนหลัง 60 วัน กด "แก้ไข" เพื่อแก้รายการที่บันทึกผิด หรือลบผลตรวจทั้งรอบ</p>
+      <p class="lead">ผลตรวจก่อนกลับย้อนหลัง 60 วัน หัวหน้ากด "แก้ไข" เพื่อแก้รายการที่บันทึกผิด หรือลบผลตรวจทั้งรอบได้</p>
     </div>
     <div class="panel"><div class="list" id="checkHist"></div></div>
   </section>
@@ -365,9 +484,10 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
     <div class="row" style="justify-content:space-between">
       <div class="row">
         <button class="danger small" id="sDoMissing" type="button">แจ้งของหาย</button>
-        <button class="small" id="sEdit" type="button">แก้ไข</button>
+        <button class="small" id="sDoDmg" type="button">แจ้งชำรุด</button>
+        <button class="small admin-only" id="sEdit" type="button">แก้ไข</button>
       </div>
-      <button class="danger small" id="sDelete" type="button">ลบรายการ</button>
+      <button class="danger small admin-only" id="sDelete" type="button">ลบรายการ</button>
     </div>
     <div class="confirm" id="sConfirm" hidden><span>ลบรายการนี้ออกจากบอร์ดถาวร?</span><button class="danger small" id="sConfirmYes" type="button">ลบ</button><button class="small" id="sConfirmNo" type="button">ไม่ลบ</button></div>
   </div>
@@ -381,7 +501,7 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
     <div class="calc" id="kSCalc"></div>
     <div class="row">
       <label class="f" style="flex:0 1 140px">จำนวน<input type="number" id="kQty" min="0" step="any"></label>
-      <label class="f">โดย<input type="text" id="kBy"></label>
+      <label class="f">โดย<input type="text" id="kBy" readonly></label>
     </div>
     <label class="f">หมายเหตุ<input type="text" id="kMoveNote" placeholder="เช่น PO เลขที่ / ใช้กับงาน"></label>
     <div class="row">
@@ -392,8 +512,8 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
     <div id="kUsage"></div>
     <div><span class="eyebrow">ความเคลื่อนไหวล่าสุด · ลบได้เฉพาะรายการบนสุด</span><div class="list" id="kMoves"></div></div>
     <div class="row" style="justify-content:space-between">
-      <button class="small" id="kEdit" type="button">แก้ไขค่าตั้ง</button>
-      <button class="danger small" id="kDelete" type="button">ลบรายการ</button>
+      <button class="small admin-only" id="kEdit" type="button">แก้ไขค่าตั้ง</button>
+      <button class="danger small admin-only" id="kDelete" type="button">ลบรายการ</button>
     </div>
     <div class="confirm" id="kConfirm" hidden><span>ลบรายการนี้ออกจากสต็อกถาวร?</span><button class="danger small" id="kConfirmYes" type="button">ลบ</button><button class="small" id="kConfirmNo" type="button">ไม่ลบ</button></div>
   </div>
@@ -406,6 +526,7 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
     </div>
     <label class="f">ผู้ตรวจ<input type="text" id="hChecker"></label>
     <div id="hMissWrap" style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">บันทึกว่าขาด</span><div class="checks" id="hMiss"></div><span class="lead" style="margin:0;font-size:.84rem">ติ๊กออกถ้าบันทึกผิด ของชิ้นนั้นจะกลับเป็นอยู่ที่บอร์ด</span></div>
+    <div id="hDmgWrap" style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">บันทึกว่าชำรุด</span><div class="checks" id="hDmg"></div></div>
     <div id="hTagWrap" style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">มีป้ายยืม</span><div class="checks" id="hTag"></div></div>
     <div id="hFailWrap" style="display:flex;flex-direction:column;gap:6px"><span class="eyebrow">เครื่องจักรไม่ผ่าน (ติ๊กออกถ้าผ่านจริง)</span><div class="checks" id="hFail"></div></div>
     <div class="checks">
@@ -423,6 +544,21 @@ table.stock td input{max-width:110px;margin-left:auto;display:block;text-align:r
       <button class="danger small" id="hDelete" type="button">ลบผลตรวจนี้</button>
     </div>
     <div class="confirm" id="hConfirm" hidden><span id="hConfirmText"></span><button class="danger small" id="hConfirmYes" type="button">ลบ</button><button class="small" id="hConfirmNo" type="button">ไม่ลบ</button></div>
+  </div>
+</div>
+<div class="auth" id="authScreen">
+  <div class="card" id="authCard">
+    <h1>Machine Shop <span>Control Board</span></h1>
+    <p class="hint" id="authMsg">กำลังเชื่อมต่อ…</p>
+  </div>
+</div>
+<div class="scrim" id="pinScrim" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+    <div class="head"><h2 id="pinTitle">เปลี่ยน PIN</h2><button class="small" id="pinClose" type="button">ปิด</button></div>
+    <label class="f">PIN ปัจจุบัน<input type="password" id="pinOld" class="pinin" inputmode="numeric" maxlength="6" autocomplete="current-password"></label>
+    <label class="f">PIN ใหม่ (6 หลัก)<input type="password" id="pinNew" class="pinin" inputmode="numeric" maxlength="6" autocomplete="new-password"></label>
+    <label class="f">ยืนยัน PIN ใหม่<input type="password" id="pinNew2" class="pinin" inputmode="numeric" maxlength="6" autocomplete="new-password"></label>
+    <div class="row"><button class="primary" id="pinSave" type="button">บันทึก PIN ใหม่</button></div>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -473,7 +609,7 @@ const STARTER=[
   ['PW-DR-01','สว่านไฟฟ้าไร้สาย','power'],['PW-BT-01','แบตเตอรี่สว่าน ก้อนที่ 1','power'],['PW-BT-02','แบตเตอรี่สว่าน ก้อนที่ 2','power'],['PW-CH-01','แท่นชาร์จแบตเตอรี่','power']];
 const itemText=x=>typeof x==='string'?x:x.t;
 
-const S={db:null,canWrite:true,items:[],checks:[],sel:null,loaded:false,
+const S={db:null,canWrite:true,items:[],checks:[],sel:null,loaded:false,q:{check:'',tools:''},open:{},mode:'missing',
   chk:{mark:{},found:new Set(),mach:{},used:{}}};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -487,7 +623,6 @@ const docId=code=>code.trim().replace(/[^A-Za-z0-9_\-.~:@+]/g,'_').replace(/^\.+
 let toastT;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600)}
 
 $('today').textContent=new Date().toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-$('cName').value=store.get('msc:name');
 S.models={};
 const machOf=cat=>[...new Set(S.items.filter(i=>i.cat===cat&&(i.machBrand||i.machModel)).map(i=>[i.machBrand,i.machModel].filter(Boolean).join(' ')))].join(', ');
 const catName=c=>{if(!MODEL_FOR[c.id])return c.name;const m=machOf(c.id);return m?c.name+' · '+m:c.name};
@@ -495,8 +630,8 @@ function renderCatOptions(){const v=$('iCat').value;$('iCat').innerHTML=CATS.map
 renderCatOptions();
 
 /* tabs */
-const TABS=['stock','check','summary','tools','history'];
-function show(tab){if(!TABS.includes(tab))tab='stock';
+const TABS=['stock','check','summary','tools','users','history'];
+function show(tab){if(!TABS.includes(tab)||(tab==='users'&&!S.isAdmin))tab='stock';
   TABS.forEach(t=>$('tab-'+t).hidden=t!==tab);
   document.querySelectorAll('nav.tabs a').forEach(a=>{if(a.dataset.tab===tab)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
   window.scrollTo(0,0)}
@@ -513,21 +648,31 @@ function li(main,sub,right){return `<div class="li"><div class="main">${main}${s
 function tileHTML(i,mode){
   let cls='tile',h='';
   if(i.status==='missing'){cls+=' missing';h='หายค้าง'}
+  if(i.status==='damaged'){cls+=' damaged';h='ชำรุด'}
   if(mode==='check'){
     const m=S.chk.mark[i.id];
-    if(i.status!=='missing'&&m==='missing'){cls+=' mark-missing';h='ขาด ไม่มีป้าย'}
-    if(i.status!=='missing'&&m==='tag'){cls+=' mark-tag';h='มีป้าย ยืมอยู่'}
+    if(i.status==='in'&&m==='missing'){cls+=' mark-missing';h='ขาด'}
+    if(i.status==='in'&&m==='tag'){cls+=' mark-tag';h='ยืมอยู่'}
+    if(i.status==='in'&&m==='damaged'){cls+=' mark-dmg';h='ชำรุด'}
     if(i.status==='missing'&&S.chk.found.has(i.id)){cls='tile mark-found';h='เจอแล้ว'}
+    if(i.status==='damaged'&&S.chk.found.has(i.id)){cls='tile mark-found';h='ซ่อมแล้ว'}
   }
   return `<button type="button" class="${cls}" data-id="${esc(i.id)}" data-mode="${mode}"${i.serial?` title="S/N ${esc(i.serial)}"`:''}><span class="c">${esc(i.code)}</span><span class="t">${esc(i.name)}</span>${h?`<span class="h">${h}</span>`:''}</button>`}
 function boardHTML(mode){
   const items=sorted();
   if(!items.length){
     if(!S.loaded)return `<div class="empty">กำลังโหลดรายการ…</div>`;
-    return `<div class="panel"><h3>บอร์ดยังว่างอยู่</h3><p class="lead" style="margin:0">สร้างชุดเริ่มต้น (เครื่องมือวัด 5, ดอกสว่าน Ø3–10 จำนวน 8, End mill 3, อุปกรณ์ประจำ Milling / Lathe / Cutting 5 ชิ้น, สว่านไฟฟ้า + แบตเตอรี่ 2 ก้อน + แท่นชาร์จ) แล้วแก้รหัสและชื่อให้ตรงกับของจริงในหน้าจัดการบอร์ด</p><div class="row"><button class="primary seedBtn" type="button" ${S.canWrite&&S.db?'':'disabled'}>สร้างชุดเริ่มต้น</button></div></div>`}
-  return CATS.map(c=>{const g=items.filter(i=>i.cat===c.id||(c.id==='other'&&!CATS.some(x=>x.id===i.cat)));if(!g.length)return'';
-    const miss=g.filter(i=>i.status==='missing').length;
-    return `<div class="board-group"><header><span class="eyebrow">${esc(catName(c))}</span><span style="font-size:.8rem;color:var(--muted)">${g.length} ช่อง${miss?` · <span style="color:var(--bad)">หายค้าง ${miss}</span>`:''}</span></header><div class="slots">${g.map(i=>tileHTML(i,mode)).join('')}</div></div>`}).join('');
+    return `<div class="panel"><h3>บอร์ดยังว่างอยู่</h3><p class="lead" style="margin:0">สร้างชุดเริ่มต้น (เครื่องมือวัด 5, ดอกสว่าน Ø3–10 จำนวน 8, End mill 3, อุปกรณ์ประจำ Milling / Lathe / Cutting 5 ชิ้น, สว่านไฟฟ้า + แบตเตอรี่ 2 ก้อน + แท่นชาร์จ) แล้วแก้รหัสและชื่อให้ตรงกับของจริงในหน้าจัดการบอร์ด</p><div class="row"><button class="primary seedBtn admin-only" type="button" ${S.canWrite&&S.db?'':'disabled'}>สร้างชุดเริ่มต้น</button></div></div>`}
+  const q=(S.q[mode]||'').trim().toLowerCase();
+  const hit=i=>!q||[i.code,i.name,i.serial,i.machBrand,i.machModel].join(' ').toLowerCase().includes(q);
+  const chev='<svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>';
+  const html=CATS.map(c=>{const all=items.filter(i=>i.cat===c.id||(c.id==='other'&&!CATS.some(x=>x.id===i.cat)));const g=all.filter(hit);if(!g.length)return'';
+    const miss=all.filter(i=>i.status==='missing').length,k=mode+':'+c.id,open=q||S.open[k]!==false;
+    let extra='';if(mode==='check'){const mm=all.filter(i=>S.chk.mark[i.id]==='missing').length,tt=all.filter(i=>S.chk.mark[i.id]==='tag').length;
+      const dd=all.filter(i=>S.chk.mark[i.id]==='damaged').length;if(mm)extra+=`<span class="pill bad">ขาด ${mm}</span>`;if(tt)extra+=`<span class="pill warn">ยืม ${tt}</span>`;if(dd)extra+=`<span class="pill dmg">ชำรุด ${dd}</span>`}
+    const dmgN=all.filter(i=>i.status==='damaged').length;if(dmgN)extra+=`<span class="pill dmg">รอซ่อม ${dmgN}</span>`;
+    return `<details class="board-group" data-k="${esc(k)}"${open?' open':''}><summary><span class="gt">${chev}<span class="eyebrow">${esc(catName(c))}</span></span><span class="gc">${extra}${miss?`<span class="pill bad">หายค้าง ${miss}</span>`:''}<span>${q?g.length+'/':''}${all.length} ช่อง</span></span></summary><div class="slots">${g.map(i=>tileHTML(i,mode)).join('')}</div></details>`}).join('');
+  return html||`<div class="empty-q">ไม่พบเครื่องมือที่ตรงกับ "${esc(q)}"</div>`;
 }
 function renderMach(){
   $('machList').innerHTML=MTYPES.map(t=>{const ms=MACH_LIST.filter(m=>m.type===t.id);if(!ms.length)return'';
@@ -544,6 +689,7 @@ function renderSummary(){
   const byId=id=>S.items.find(i=>i.id===id);
   const miss=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='missing').map(byId).filter(Boolean);
   const tag=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='tag').map(byId).filter(Boolean);
+  const dmg=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='damaged').map(byId).filter(Boolean);
   const found=[...S.chk.found].map(byId).filter(Boolean);
   const still=S.items.filter(i=>i.status==='missing'&&!S.chk.found.has(i.id));
   const {fails}=machResult();const matBad=$('matBad').checked,area=$('areaOk').checked;
@@ -554,13 +700,16 @@ function renderSummary(){
   const L=[];
   L.push(miss.length?`<span class="pill bad">ขาด ${miss.length}</span> ${codes(miss)}`:`<span class="pill good">เครื่องมือครบ</span>`);
   if(tag.length)L.push(`<span class="pill warn">มีป้ายยืม ${tag.length}</span> ${codes(tag)}`);
-  if(found.length)L.push(`<span class="pill good">เจอคืน ${found.length}</span> ${codes(found)}`);
+  if(dmg.length)L.push(`<span class="pill dmg">ชำรุด ${dmg.length}</span> ${codes(dmg)}`);
+  if(found.length)L.push(`<span class="pill good">เจอคืน / ซ่อมแล้ว ${found.length}</span> ${codes(found)}`);
   if(still.length)L.push(`<span class="pill mute">หายค้างจากวันก่อน ${still.length}</span>`);
   {const nu=machResult().used.length;L.push(nu?`<span class="pill mute">ใช้งานวันนี้ ${nu} เครื่อง</span>`:`<span class="pill mute">ยังไม่ได้เลือกเครื่องที่ใช้วันนี้</span>`)}
   L.push(fails.length?`<span class="pill warn">เครื่องจักรยังไม่ผ่าน ${fails.length} ข้อ</span>`:`<span class="pill good">เครื่องจักรผ่านทุกข้อ</span>`);
   L.push(matBad?`<span class="pill bad">วัสดุผิดปกติ</span>`:`<span class="pill good">วัสดุปกติ</span>`);
   L.push(area?`<span class="pill good">พื้นที่เรียบร้อย</span>`:`<span class="pill warn">ยังไม่ยืนยันพื้นที่</span>`);
   $('checkSummary').innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">${L.map(l=>`<div>${l}</div>`).join('')}</div>`;
+  const nu=machResult().used.length;
+  $('saveSv').innerHTML=`<span class="${miss.length?'bad':''}"><b>${miss.length}</b>ขาด</span><span class="${tag.length?'warn':''}"><b>${tag.length}</b>ยืมอยู่</span><span class="${dmg.length?'dmg':''}"><b>${dmg.length}</b>ชำรุด</span><span><b>${nu}</b>เครื่องที่ใช้</span>${fails.length?`<span class="warn"><b>${fails.length}</b>ข้อไม่ผ่าน</span>`:''}`;
 }
 function renderCheck(){
   const ck=todayCheck(),cd=$('checkDone');cd.hidden=!ck;
@@ -580,6 +729,8 @@ function renderStats(){
     <div class="stat ${ck?'good':'warn'}"><span class="n">${ck?'✓':'—'}</span><span class="l">${ck?'วันนี้ตรวจแล้ว':'วันนี้ยังไม่ได้ตรวจ'}</span></div>
     <div class="stat"><span class="n">${r.length}</span><span class="l">วันที่ตรวจใน 30 วัน</span></div>
     <div class="stat ${fails30?'warn':''}"><span class="n">${fails30}</span><span class="l">ข้อเครื่องจักรไม่ผ่าน (30 วัน)</span></div>`;
+  const dmgs=S.items.filter(i=>i.status==='damaged');
+  $('sumDmg').innerHTML=dmgs.length?dmgs.map(i=>li(`<span class="code">${esc(i.code)}</span> ${esc(i.name)}`,[i.serial?'S/N '+esc(i.serial):'',i.damagedSince?'แจ้งชำรุด '+dmy(i.damagedSince.slice(0,10)):''].filter(Boolean).join(' · '),`<span class="pill dmg">ชำรุด</span>`)).join(''):`<div class="empty">ไม่มีของชำรุด</div>`;
   $('sumMissing').innerHTML=miss.length?miss.map(i=>li(`<span class="code">${esc(i.code)}</span> ${esc(i.name)}`,[i.serial?'S/N '+esc(i.serial):'',i.missingSince?'พบว่าขาด '+dmy(i.missingSince.slice(0,10)):''].filter(Boolean).join(' · '),`<span class="pill bad">หาย</span>`)).join(''):`<div class="empty">ไม่มีของหายค้าง</div>`;
   const freq={};r.forEach(c=>(c.missing||[]).forEach(code=>freq[code]=(freq[code]||0)+1));
   const fr=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8),fmax=fr.length?fr[0][1]:1;
@@ -597,17 +748,18 @@ function renderHistory(){
     const bad=(c.missing||[]).length,mf=(c.machineFails||[]).length;
     const pills=[bad?`<span class="pill bad">ขาด ${bad}</span>`:`<span class="pill good">ครบ</span>`];
     if((c.tagged||[]).length)pills.push(`<span class="pill warn">ยืม ${c.tagged.length}</span>`);
+    if((c.damaged||[]).length)pills.push(`<span class="pill dmg">ชำรุด ${c.damaged.length}</span>`);
     if(mf)pills.push(`<span class="pill warn">เครื่องจักร ${mf} ข้อ</span>`);
     if(c.materialOk===false)pills.push(`<span class="pill bad">วัสดุผิดปกติ</span>`);
     if(c.batteryCharged===false)pills.push(`<span class="pill warn">แบตไม่ได้ชาร์จ</span>`);
-    const sub=[bad?'ขาด: '+c.missing.map(esc).join(', '):'',(c.tagged||[]).length?'มีป้ายยืม: '+c.tagged.map(esc).join(', '):'',(c.found||[]).length?'เจอคืน: '+c.found.map(esc).join(', '):'',mf?esc(c.machineFails.join(' · ')):'',(c.used||[]).length?'เครื่องที่ใช้: '+c.used.map(esc).join(', '):'',(c.skipped||[]).length?'ไม่ได้ใช้: '+c.skipped.map(esc).join(', '):'',c.materialNote?'วัสดุ: '+esc(c.materialNote):'',c.note?'หมายเหตุ: '+esc(c.note):''].filter(Boolean).join('<br>');
-    return li(`<b>${dmy(c.day)}</b> · ${esc(c.checker)} <span class="code">${hm(c.ts)}</span>${c.editedAt?` <span class="pill mute">แก้ไขแล้ว ${dmy(c.editedAt.slice(0,10))}</span>`:''}`,sub,`<span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${pills.join('')}<button class="small" type="button" data-hedit="${esc(c.id)}">แก้ไข</button></span>`)}).join(''):`<div class="empty">ยังไม่มีผลตรวจ บันทึกครั้งแรกจากหน้าตรวจก่อนกลับ</div>`;
+    const sub=[bad?'ขาด: '+c.missing.map(esc).join(', '):'',(c.tagged||[]).length?'มีป้ายยืม: '+c.tagged.map(esc).join(', '):'',(c.found||[]).length?'เจอคืน: '+c.found.map(esc).join(', '):'',(c.damaged||[]).length?'ชำรุด: '+c.damaged.map(esc).join(', '):'',(c.repaired||[]).length?'ซ่อมแล้ว: '+c.repaired.map(esc).join(', '):'',mf?esc(c.machineFails.join(' · ')):'',(c.used||[]).length?'เครื่องที่ใช้: '+c.used.map(esc).join(', '):'',(c.skipped||[]).length?'ไม่ได้ใช้: '+c.skipped.map(esc).join(', '):'',c.materialNote?'วัสดุ: '+esc(c.materialNote):'',c.note?'หมายเหตุ: '+esc(c.note):''].filter(Boolean).join('<br>');
+    return li(`<b>${dmy(c.day)}</b> · ${esc(c.checker)} <span class="code">${hm(c.ts)}</span>${c.editedAt?` <span class="pill mute">แก้ไขแล้ว ${dmy(c.editedAt.slice(0,10))}</span>`:''}`,sub,`<span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${pills.join('')}<button class="small admin-only" type="button" data-hedit="${esc(c.id)}">แก้ไข</button></span>`)}).join(''):`<div class="empty">ยังไม่มีผลตรวจ บันทึกครั้งแรกจากหน้าตรวจก่อนกลับ</div>`;
 }
 function renderAll(){renderCatOptions();renderStock();renderCheck();renderStats();$('board').innerHTML=boardHTML('tools');renderHistory();if(S.sel)renderSheet()}
 
 /* writes */
-function guard(){if(!S.db){toast('บันทึกไม่ได้ในมุมมองนี้');return false}if(!S.canWrite){toast('บัญชีนี้ดูได้อย่างเดียว');return false}return true}
-async function run(btn,fn,ok){if(!guard())return;btn.disabled=true;try{await fn();if(ok)toast(ok)}catch(e){toast(e&&e.code==='quota_exceeded'?'พื้นที่เก็บข้อมูลเต็ม':e&&e.code==='invalid_argument'?'บัญชีนี้ไม่มีสิทธิ์บันทึก':'บันทึกไม่สำเร็จ ลองอีกครั้ง')}finally{btn.disabled=false}}
+function guard(){if(!S.db||!S.me){toast('กรุณาเข้าสู่ระบบก่อน');return false}if(!S.canWrite){toast('บัญชีนี้ดูได้อย่างเดียว');return false}return true}
+async function run(btn,fn,ok){if(!guard())return;btn.disabled=true;try{await fn();if(ok)toast(ok)}catch(e){if(e&&e.handled)return;toast(e&&e.code==='quota_exceeded'?'พื้นที่เก็บข้อมูลเต็ม':e&&(e.code==='invalid_argument'||e.code==='permission-denied')?'บัญชีนี้ไม่มีสิทธิ์ทำรายการนี้':'บันทึกไม่สำเร็จ ลองอีกครั้ง')}finally{btn.disabled=false}}
 const blank=(code,name,cat,loc,serial)=>({code,name,cat,loc:loc||'',serial:serial||'',status:'in',missingSince:''});
 
 /* item form */
@@ -657,8 +809,8 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('.tile');if(!t)return;
   const it=S.items.find(i=>i.id===t.dataset.id);if(!it)return;
   if(t.dataset.mode==='check'){
-    if(it.status==='missing'){S.chk.found.has(it.id)?S.chk.found.delete(it.id):S.chk.found.add(it.id)}
-    else{const m=S.chk.mark[it.id];if(!m)S.chk.mark[it.id]='missing';else if(m==='missing')S.chk.mark[it.id]='tag';else delete S.chk.mark[it.id]}
+    if(it.status==='missing'||it.status==='damaged'){S.chk.found.has(it.id)?S.chk.found.delete(it.id):S.chk.found.add(it.id)}
+    else{if(S.chk.mark[it.id]===S.mode)delete S.chk.mark[it.id];else S.chk.mark[it.id]=S.mode}
     $('checkBoard').innerHTML=boardHTML('check');renderSummary();return}
   openSheet(it.id)});
 $('machList').addEventListener('change',e=>{const k=e.target.dataset.mach;if(k){S.chk.mach[k]=e.target.checked;renderMach();renderSummary()}});
@@ -672,13 +824,14 @@ function closeSheet(){S.sel=null;$('scrim').hidden=true}
 function renderSheet(){const it=S.items.find(i=>i.id===S.sel);if(!it){closeSheet();return}
   $('sCode').textContent=it.code;$('sTitle').textContent=it.name;
   const cat=catName(CATS.find(c=>c.id===it.cat)||{id:'',name:'อื่นๆ'});
-  $('sInfo').innerHTML=(it.serial?`<div>S/N <span class="code">${esc(it.serial)}</span></div>`:'')+(it.machBrand||it.machModel?`<div>ใช้กับเครื่อง ${esc([it.machBrand,it.machModel].filter(Boolean).join(' '))}</div>`:'')+(it.status==='missing'?`<span class="pill bad">หายค้าง</span> ตั้งแต่ ${it.missingSince?dmy(it.missingSince.slice(0,10)):'—'}`:`<span class="pill good">อยู่ที่บอร์ด</span> ${esc(cat)}${it.loc?' · '+esc(it.loc):''}`);
-  $('sFoundRow').hidden=it.status!=='missing';$('sDoMissing').hidden=it.status==='missing'}
+  $('sInfo').innerHTML=(it.serial?`<div>S/N <span class="code">${esc(it.serial)}</span></div>`:'')+(it.machBrand||it.machModel?`<div>ใช้กับเครื่อง ${esc([it.machBrand,it.machModel].filter(Boolean).join(' '))}</div>`:'')+(it.status==='damaged'?`<span class="pill dmg">ชำรุด</span> ตั้งแต่ ${it.damagedSince?dmy(it.damagedSince.slice(0,10)):'—'}`:it.status==='missing'?`<span class="pill bad">หายค้าง</span> ตั้งแต่ ${it.missingSince?dmy(it.missingSince.slice(0,10)):'—'}`:`<span class="pill good">อยู่ที่บอร์ด</span> ${esc(cat)}${it.loc?' · '+esc(it.loc):''}`);
+  $('sFoundRow').hidden=it.status==='in';$('sDoFound').textContent=it.status==='damaged'?'ซ่อมแล้ว ใช้งานได้':'เจอแล้ว คืนเข้าบอร์ด';$('sDoMissing').hidden=it.status==='missing';$('sDoDmg').hidden=it.status!=='in'}
 $('sClose').addEventListener('click',closeSheet);
 $('scrim').addEventListener('click',e=>{if(e.target===$('scrim'))closeSheet()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('scrim').hidden)closeSheet()});
 const cur=()=>S.items.find(i=>i.id===S.sel);
-$('sDoFound').addEventListener('click',()=>{const it=cur();if(!it)return;run($('sDoFound'),async()=>{await S.db.doc('items/'+it.id).update({status:'in',missingSince:''});closeSheet()},'บันทึกว่าเจอ '+it.code+' แล้ว')});
+$('sDoFound').addEventListener('click',()=>{const it=cur();if(!it)return;const d=it.status==='damaged';run($('sDoFound'),async()=>{await S.db.doc('items/'+it.id).update({status:'in',missingSince:'',damagedSince:''});closeSheet()},(d?'บันทึกว่าซ่อม ':'บันทึกว่าเจอ ')+it.code+' แล้ว')});
+$('sDoDmg').addEventListener('click',()=>{const it=cur();if(!it)return;run($('sDoDmg'),async()=>{await S.db.doc('items/'+it.id).update({status:'damaged',damagedSince:new Date().toISOString()});closeSheet()},'แจ้งชำรุด '+it.code+' แล้ว')});
 $('sDoMissing').addEventListener('click',()=>{const it=cur();if(!it)return;run($('sDoMissing'),async()=>{await S.db.doc('items/'+it.id).update({status:'missing',missingSince:new Date().toISOString()});closeSheet()},'แจ้งของหายแล้ว')});
 $('sEdit').addEventListener('click',()=>{const it=cur();if(!it)return;editing=it.id;$('iCode').value=it.code;$('iName').value=it.name;$('iCat').value=it.cat;$('iLoc').value=it.loc||'';$('iSerial').value=it.serial||'';setMach(it.machBrand||'',it.machModel||'');syncMachRow();$('iSubmit').textContent='บันทึกการแก้ไข';$('iCancel').hidden=false;$('addPanel').open=true;closeSheet();show('tools');$('addPanel').scrollIntoView({block:'start'});$('iName').focus()});
 $('sDelete').addEventListener('click',()=>{$('sConfirm').hidden=false});
@@ -691,16 +844,19 @@ $('cSubmit').addEventListener('click',()=>{
   if(!S.items.length){toast('ยังไม่มีรายการเครื่องมือบนบอร์ด');return}
   const matBad=$('matBad').checked;if(matBad&&!$('matNote').value.trim()){toast('ระบุรายละเอียดวัสดุที่ผิดปกติ');$('matNote').focus();return}
   const byId=id=>S.items.find(i=>i.id===id);
-  const miss=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='missing').map(byId).filter(i=>i&&i.status!=='missing');
+  const miss=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='missing').map(byId).filter(i=>i&&i.status==='in');
   const tag=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='tag').map(byId).filter(Boolean);
   const found=[...S.chk.found].map(byId).filter(i=>i&&i.status==='missing');
+  const repaired=[...S.chk.found].map(byId).filter(i=>i&&i.status==='damaged');
+  const dmg=Object.keys(S.chk.mark).filter(id=>S.chk.mark[id]==='damaged').map(byId).filter(i=>i&&i.status==='in');
   const {fails,used}=machResult();const now=new Date().toISOString(),day=today();
   run($('cSubmit'),async()=>{
     for(const it of miss)await S.db.doc('items/'+it.id).update({status:'missing',missingSince:now});
     for(const it of found)await S.db.doc('items/'+it.id).update({status:'in',missingSince:''});
-    await S.db.doc('checks/'+day).set({day,ts:now,checker,missing:miss.map(i=>i.code),tagged:tag.map(i=>i.code),found:found.map(i=>i.code),stillMissing:S.items.filter(i=>i.status==='missing'&&!found.includes(i)).map(i=>i.code),machineFails:fails,used,materialOk:!matBad,materialNote:matBad?$('matNote').value.trim():'',areaOk:$('areaOk').checked,batteryCharged:$('battOk').checked,note:$('cNote').value.trim()});
-    store.set('msc:name',checker);
-    S.chk={mark:{},found:new Set(),mach:{},used:{}};renderMach();
+    for(const it of repaired)await S.db.doc('items/'+it.id).update({status:'in',damagedSince:''});
+    for(const it of dmg)await S.db.doc('items/'+it.id).update({status:'damaged',damagedSince:now});
+    await S.db.doc('checks/'+day).set({day,ts:now,checker,checkerUid:S.me.uid,checkerEmp:S.me.empId,missing:miss.map(i=>i.code),tagged:tag.map(i=>i.code),found:found.map(i=>i.code),damaged:dmg.map(i=>i.code),repaired:repaired.map(i=>i.code),stillMissing:S.items.filter(i=>i.status==='missing'&&!found.includes(i)).map(i=>i.code),machineFails:fails,used,materialOk:!matBad,materialNote:matBad?$('matNote').value.trim():'',areaOk:$('areaOk').checked,batteryCharged:$('battOk').checked,note:$('cNote').value.trim()});
+        S.chk={mark:{},found:new Set(),mach:{},used:{}};renderMach();$('cName').value=S.me.name;
     $('matOk').checked=true;$('matNote').value='';$('matNoteWrap').hidden=true;$('areaOk').checked=false;$('battOk').checked=false;$('cNote').value='';
     renderCheck();window.scrollTo(0,0)},'บันทึกผลตรวจแล้ว')});
 
@@ -787,7 +943,7 @@ function renderStock(){
   const shown=rows.filter(r=>(!cat||r.it.cat===cat)&&(!q||(r.it.code+' '+r.it.name+' '+(r.it.machBrand||'')+' '+(r.it.machModel||'')).toLowerCase().includes(q)))
     .sort((a,b)=>order[a.c.status]-order[b.c.status]||a.it.code.localeCompare(b.it.code,undefined,{numeric:true}));
   if(!S.stock.length){
-    $('stockBody').innerHTML=`<tr><td colspan="6"><div style="display:flex;flex-direction:column;gap:10px;padding:8px 0;cursor:default">${S.loadedStock?`<b>ยังไม่มีรายการสต็อก</b><span class="lead" style="margin:0">เพิ่มทีละรายการจากฟอร์มด้านล่าง หรือสร้างรายการตั้งต้น 15 รายการ (ดอกสว่าน, ดอกนำศูนย์, end mill, insert, ต๊าป, ใบตัด, เวอร์เนียร์, ประแจหกเหลี่ยม) โดยยอดคงเหลือเป็น 0 แล้วใส่ยอดนับจริงและค่าการใช้งานทีหลัง</span><div><button class="primary stockSeed" type="button" ${S.canWrite&&S.db?'':'disabled'}>สร้างรายการตั้งต้น</button></div>`:'กำลังโหลด…'}</div></td></tr>`;
+    $('stockBody').innerHTML=`<tr><td colspan="6"><div style="display:flex;flex-direction:column;gap:10px;padding:8px 0;cursor:default">${S.loadedStock?`<b>ยังไม่มีรายการสต็อก</b><span class="lead" style="margin:0">เพิ่มทีละรายการจากฟอร์มด้านล่าง หรือสร้างรายการตั้งต้น 15 รายการ (ดอกสว่าน, ดอกนำศูนย์, end mill, insert, ต๊าป, ใบตัด, เวอร์เนียร์, ประแจหกเหลี่ยม) โดยยอดคงเหลือเป็น 0 แล้วใส่ยอดนับจริงและค่าการใช้งานทีหลัง</span><div><button class="primary stockSeed admin-only" type="button" ${S.canWrite&&S.db?'':'disabled'}>สร้างรายการตั้งต้น</button></div>`:'กำลังโหลด…'}</div></td></tr>`;
   }else{
     $('stockBody').innerHTML=shown.length?shown.map(({it,c})=>`<tr class="${c.status==='crit'?'crit':c.status==='reorder'?'reorder':''}" data-kid="${esc(it.id)}" tabindex="0"><td><span class="code">${esc(it.code)}</span><span class="nm">${esc(it.name)}${it.machBrand||it.machModel?' · '+esc([it.machBrand,it.machModel].filter(Boolean).join(' ')):''}</span></td><td class="num"><b>${fmt(c.on,it.unit)}</b> ${esc(it.unit)}${gauge(it,c)}</td><td class="num">${c.ready?fmt(c.ss,it.unit):'—'}</td><td class="num">${c.ready?fmt(c.rop,it.unit):'—'}</td><td class="num">${c.ready?(Number.isFinite(c.cover)?Math.floor(c.cover)+' วัน':'—'):'—'}</td><td><span class="pill ${ST[c.status][1]}">${ST[c.status][0]}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">ไม่พบรายการที่ตรงกับการค้นหา</td></tr>`;
   }
@@ -805,7 +961,7 @@ $('kCat').innerHTML=SCATS.map(c=>`<option value="${c.id}">${c.name}</option>`).j
 $('kUnit').innerHTML=UNITS.map(u=>`<option>${u}</option>`).join('');
 $('stockCat').innerHTML=`<option value="">ทุกหมวด</option>`+SCATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
 $('countCat').innerHTML=`<option value="">ทุกหมวด</option>`+SCATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-$('countBy').value=store.get('msc:name');$('kBy').value=store.get('msc:name');
+
 function formItem(){return {usageAvg:$('kAvg').value,usageMax:$('kMax').value,leadDays:$('kLead').value,ssMode:$('kSsMode').value,ssManual:$('kSs').value,maxStock:$('kMaxStock').value,onHand:$('kOnHand').value,unit:$('kUnit').value}}
 function calcBlocks(it,c){
   if(!c.ready)return `<div><span class="k">ต้องใส่ก่อนคำนวณ</span><span class="fx">lead time + ใช้เฉลี่ย/เดือน (ของสึกหรอ) หรือ Safety stock กำหนดเอง (เครื่องมือวัด, ประแจ)</span></div>`;
@@ -845,7 +1001,7 @@ $('stockForm').addEventListener('submit',e=>{e.preventDefault();
     if(kEditing)await S.db.doc('stock/'+id).update({code,...body});
     else{const on=num($('kOnHand').value);const now=new Date().toISOString();
       await S.db.doc('stock/'+id).set({code,...body,onHand:on,lastCountAt:on>0?now:'',createdAt:now});
-      if(on>0)await S.db.collection('moves').add({ts:now,itemId:id,code,type:'count',qty:on,before:0,after:on,baseline:true,by:store.get('msc:name')||'—',note:'ยอดตั้งต้น'})}
+      if(on>0)await S.db.collection('moves').add({ts:now,itemId:id,code,type:'count',qty:on,before:0,after:on,baseline:true,by:S.me?S.me.name:'—',note:'ยอดตั้งต้น'})}
     const was=!!kEditing;resetStockForm();toast(was?'แก้ไขค่าตั้งแล้ว':'เพิ่ม '+code+' แล้ว')})});
 
 /* table + search */
@@ -875,7 +1031,7 @@ $('countSave').addEventListener('click',()=>{
       await S.db.doc('stock/'+it.id).update({onHand:v,lastCountAt:now});
       await S.db.collection('moves').add({ts:now,itemId:it.id,code:it.code,type:'count',qty:v,before,after:v,baseline:!it.lastCountAt,by,note:'นับรอบ'});
       if(v!==before)diff++}
-    store.set('msc:name',by);document.querySelectorAll('#countBody input').forEach(i=>i.value='');
+    document.querySelectorAll('#countBody input').forEach(i=>i.value='');
     toast(`บันทึกผลนับ ${entries.length} รายการ · ยอดต่างจากระบบ ${diff} รายการ`)})});
 
 /* stock sheet */
@@ -888,10 +1044,10 @@ function renderKSheet(){const it=kcur();if(!it){closeK();return}const c=calc(it)
   $('kSCalc').innerHTML=calcBlocks(it,c);
   const a=actualUsage(it);
   $('kUsage').innerHTML=!a?'':a.perMonth==null?`<div class="sub" style="color:var(--muted);font-size:.85rem">มีข้อมูลการใช้ ${Math.floor(a.span)} วัน นับสต็อกจริงต่อไปทุกสัปดาห์ ครบ 30 วันระบบจะคำนวณการใช้เฉลี่ยให้ ครบ 60 วันจะได้การใช้สูงสุดด้วย</div>`:
-    `<div class="banner" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between"><span>ใช้จริงจากข้อมูล ${Math.floor(a.span)} วัน: <b>${a.perMonth.toLocaleString('th-TH',{maximumFractionDigits:1})} ${esc(it.unit)}/เดือน</b> ${a.maxMonth!=null?` · สูงสุด <b>${a.maxMonth.toLocaleString('th-TH',{maximumFractionDigits:1})}</b>/เดือน`:' · ครบ 60 วันจะได้ค่าสูงสุดด้วย'} (ตั้งไว้ ${c.avg?fmt(c.avg,it.unit):'ยังไม่ได้ใส่'})</span><button class="small" type="button" id="kApplyUsage" data-v="${a.perMonth}" data-m="${a.maxMonth??''}">ใช้ค่านี้</button></div>`;
+    `<div class="banner" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between"><span>ใช้จริงจากข้อมูล ${Math.floor(a.span)} วัน: <b>${a.perMonth.toLocaleString('th-TH',{maximumFractionDigits:1})} ${esc(it.unit)}/เดือน</b> ${a.maxMonth!=null?` · สูงสุด <b>${a.maxMonth.toLocaleString('th-TH',{maximumFractionDigits:1})}</b>/เดือน`:' · ครบ 60 วันจะได้ค่าสูงสุดด้วย'} (ตั้งไว้ ${c.avg?fmt(c.avg,it.unit):'ยังไม่ได้ใส่'})</span><button class="small admin-only" type="button" id="kApplyUsage" data-v="${a.perMonth}" data-m="${a.maxMonth??''}">ใช้ค่านี้</button></div>`;
   const mv=S.moves.filter(m=>m.itemId===it.id).slice(0,8);
   const T={in:['รับเข้า','good'],out:['เบิกออก','warn'],count:['นับ','mute']};
-  $('kMoves').innerHTML=mv.length?mv.map((m,ix)=>li(`<span class="pill ${T[m.type][1]}">${T[m.type][0]}</span> ${m.type==='count'?`${fmt(num(m.before),it.unit)} → <b>${fmt(num(m.after),it.unit)}</b>`:`${m.type==='in'?'+':'−'}${fmt(num(m.qty),it.unit)}`} ${esc(it.unit)}`,`${esc(m.by)}${m.note?' · '+esc(m.note):''}`,`<span style="display:flex;gap:6px;align-items:center"><span class="code">${dmy(m.ts.slice(0,10))} ${hm(m.ts)}</span>${ix===0?`<button class="small danger" type="button" id="kUndo" data-mid="${esc(m.id)}">ลบ</button>`:''}</span>`)).join(''):`<div class="empty">ยังไม่มีความเคลื่อนไหว</div>`}
+  $('kMoves').innerHTML=mv.length?mv.map((m,ix)=>li(`<span class="pill ${T[m.type][1]}">${T[m.type][0]}</span> ${m.type==='count'?`${fmt(num(m.before),it.unit)} → <b>${fmt(num(m.after),it.unit)}</b>`:`${m.type==='in'?'+':'−'}${fmt(num(m.qty),it.unit)}`} ${esc(it.unit)}`,`${esc(m.by)}${m.note?' · '+esc(m.note):''}`,`<span style="display:flex;gap:6px;align-items:center"><span class="code">${dmy(m.ts.slice(0,10))} ${hm(m.ts)}</span>${ix===0?`<button class="small danger admin-only" type="button" id="kUndo" data-mid="${esc(m.id)}">ลบ</button>`:''}</span>`)).join(''):`<div class="empty">ยังไม่มีความเคลื่อนไหว</div>`}
 $('kClose').addEventListener('click',closeK);
 $('kScrim').addEventListener('click',e=>{if(e.target===$('kScrim'))closeK()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('kScrim').hidden)closeK()});
@@ -903,7 +1059,7 @@ function move(type,btn){const it=kcur();if(!it)return;const raw=$('kQty').value;
   run(btn,async()=>{const now=new Date().toISOString();
     await S.db.doc('stock/'+it.id).update(type==='count'?{onHand:after,lastCountAt:now}:{onHand:after});
     await S.db.collection('moves').add({ts:now,itemId:it.id,code:it.code,type,qty:q,before,after,baseline:type==='count'&&!it.lastCountAt,by,note:$('kMoveNote').value.trim()});
-    store.set('msc:name',by);$('kQty').value='';$('kMoveNote').value=''},
+    $('kQty').value='';$('kMoveNote').value=''},
     type==='in'?'รับเข้าแล้ว':type==='out'?'เบิกออกแล้ว':'ตั้งยอดตามที่นับแล้ว')}
 $('kIn').addEventListener('click',()=>move('in',$('kIn')));
 $('kOut').addEventListener('click',()=>move('out',$('kOut')));
@@ -931,13 +1087,15 @@ function hchips(id,arr){$(id).innerHTML=arr.map((v,i)=>`<label class="chk"><inpu
 function openH(id){hsel=id;const c=hcur();if(!c)return;
   $('hTitle').textContent='วันที่ '+dmy(c.day)+' · '+hm(c.ts);
   $('hChecker').value=c.checker||'';$('hNote').value=c.note||'';
-  hchips('hMiss',c.missing||[]);hchips('hTag',c.tagged||[]);hchips('hFail',c.machineFails||[]);
+  hchips('hMiss',c.missing||[]);hchips('hDmg',c.damaged||[]);hchips('hTag',c.tagged||[]);hchips('hFail',c.machineFails||[]);
   $('hMatOk').checked=c.materialOk!==false;$('hMatBad').checked=c.materialOk===false;$('hMatNote').value=c.materialNote||'';
   $('hBatt').checked=!!c.batteryCharged;$('hArea').checked=!!c.areaOk;
   $('hConfirm').hidden=true;$('hScrim').hidden=false;setTimeout(()=>$('hChecker').focus(),0)}
 function closeH(){hsel=null;$('hScrim').hidden=true}
 async function revertMissing(c,codes){for(const code of codes){const it=S.items.find(i=>i.code===code);
   if(it&&it.status==='missing'&&it.missingSince===c.ts)await S.db.doc('items/'+it.id).update({status:'in',missingSince:''})}}
+async function revertDmg(c,codes){for(const code of codes){const it=S.items.find(i=>i.code===code);
+  if(it&&it.status==='damaged'&&it.damagedSince===c.ts)await S.db.doc('items/'+it.id).update({status:'in',damagedSince:''})}}
 $('checkHist').addEventListener('click',e=>{const b=e.target.closest('[data-hedit]');if(b)openH(b.dataset.hedit)});
 $('hClose').addEventListener('click',closeH);
 $('hScrim').addEventListener('click',e=>{if(e.target===$('hScrim'))closeH()});
@@ -946,14 +1104,15 @@ $('hSave').addEventListener('click',()=>{const c=hcur();if(!c)return;
   const checker=$('hChecker').value.trim();if(!checker){toast('ใส่ชื่อผู้ตรวจ');$('hChecker').focus();return}
   const kept=id=>[...document.querySelectorAll('#'+id+' input')].filter(i=>i.checked).map(i=>i.dataset.v);
   const missing=kept('hMiss'),removed=(c.missing||[]).filter(x=>!missing.includes(x)),matBad=$('hMatBad').checked;
-  run($('hSave'),async()=>{await revertMissing(c,removed);
-    await S.db.doc('checks/'+c.id).update({checker,note:$('hNote').value.trim(),missing,tagged:kept('hTag'),machineFails:kept('hFail'),materialOk:!matBad,materialNote:matBad?$('hMatNote').value.trim():'',batteryCharged:$('hBatt').checked,areaOk:$('hArea').checked,editedAt:new Date().toISOString()});
+  const damaged=kept('hDmg'),removedD=(c.damaged||[]).filter(x=>!damaged.includes(x));
+  run($('hSave'),async()=>{await revertMissing(c,removed);await revertDmg(c,removedD);
+    await S.db.doc('checks/'+c.id).update({checker,note:$('hNote').value.trim(),missing,damaged,tagged:kept('hTag'),machineFails:kept('hFail'),materialOk:!matBad,materialNote:matBad?$('hMatNote').value.trim():'',batteryCharged:$('hBatt').checked,areaOk:$('hArea').checked,editedAt:new Date().toISOString()});
     closeH()},removed.length?'แก้ไขแล้ว · '+removed.join(', ')+' กลับเป็นอยู่ที่บอร์ด':'แก้ไขผลตรวจแล้ว')});
 $('hDelete').addEventListener('click',()=>{const c=hcur();if(!c)return;const n=(c.missing||[]).length;
-  $('hConfirmText').textContent='ลบผลตรวจวันที่ '+dmy(c.day)+' ถาวร?'+(n?' ของ '+n+' รายการที่บันทึกว่าขาดในรอบนี้จะกลับเป็นอยู่ที่บอร์ด':'');$('hConfirm').hidden=false});
+  $('hConfirmText').textContent='ลบผลตรวจวันที่ '+dmy(c.day)+' ถาวร?'+(n+(c.damaged||[]).length?' ของที่บันทึกว่าขาดหรือชำรุดในรอบนี้จะกลับเป็นอยู่ที่บอร์ด':'');$('hConfirm').hidden=false});
 $('hConfirmNo').addEventListener('click',()=>{$('hConfirm').hidden=true});
 $('hConfirmYes').addEventListener('click',()=>{const c=hcur();if(!c)return;
-  run($('hConfirmYes'),async()=>{await revertMissing(c,c.missing||[]);await S.db.doc('checks/'+c.id).delete();closeH()},'ลบผลตรวจแล้ว')});
+  run($('hConfirmYes'),async()=>{await revertMissing(c,c.missing||[]);await revertDmg(c,c.damaged||[]);await S.db.doc('checks/'+c.id).delete();closeH()},'ลบผลตรวจแล้ว')});
 
 /* undo latest stock movement */
 document.addEventListener('click',e=>{const b=e.target.closest('#kUndo');if(!b)return;
@@ -967,21 +1126,144 @@ document.addEventListener('click',e=>{const b=e.target.closest('#kUndo');if(!b)r
 /* machine models */
 function applyModels(){renderCatOptions();renderMach();renderAll()}
 
+/* board UI: search, mode, collapsible groups */
+function setMode(m){S.mode=m;$('modeMiss').setAttribute('aria-pressed',m==='missing');$('modeTag').setAttribute('aria-pressed',m==='tag');$('modeDmg').setAttribute('aria-pressed',m==='damaged')}
+$('modeDmg').addEventListener('click',()=>setMode('damaged'));
+$('modeMiss').addEventListener('click',()=>setMode('missing'));
+$('modeTag').addEventListener('click',()=>setMode('tag'));
+$('qCheck').addEventListener('input',e=>{S.q.check=e.target.value;$('checkBoard').innerHTML=boardHTML('check')});
+$('qTools').addEventListener('input',e=>{S.q.tools=e.target.value;$('board').innerHTML=boardHTML('tools')});
+document.addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.matches('details.board-group')){const mode=d.dataset.k.split(':')[0];if(!(S.q[mode]||'').trim())S.open[d.dataset.k]=d.open}},true);
+$('goSave').addEventListener('click',()=>{$('st4').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});setTimeout(()=>{if(!$('cName').value)$('cName').focus()},300)});
+
 renderMach();renderAll();
 
-/* data */
+/* ================= Firebase: auth + data ================= */
+const EMAIL_DOMAIN='msc-users.app';
+const empEmail=e=>String(e).trim().toLowerCase().replace(/[^a-z0-9._-]/g,'_')+'@'+EMAIL_DOMAIN;
+const pinOk=p=>/^\d{6}$/.test(p);
+const AUTH_ERR={'auth/invalid-credential':'รหัสพนักงานหรือ PIN ไม่ถูกต้อง','auth/wrong-password':'รหัสพนักงานหรือ PIN ไม่ถูกต้อง','auth/user-not-found':'รหัสพนักงานหรือ PIN ไม่ถูกต้อง','auth/invalid-email':'รหัสพนักงานไม่ถูกต้อง','auth/too-many-requests':'ลองผิดหลายครั้งเกินไป รอสักครู่แล้วลองใหม่','auth/network-request-failed':'เชื่อมต่ออินเทอร์เน็ตไม่ได้','auth/email-already-in-use':'รหัสพนักงานนี้มีบัญชีอยู่แล้ว','auth/weak-password':'PIN ต้องเป็นตัวเลข 6 หลัก'};
+const authErr=e=>AUTH_ERR[e&&e.code]||((e&&e.message)||'เกิดข้อผิดพลาด');
+let FB=null,AUTH=null,unsubs=[];
+function authCard(html){$('authCard').innerHTML=`<h1>Machine Shop <span>Control Board</span></h1>`+html;$('authScreen').hidden=false}
+function loginView(msg){
+  authCard(`<p class="hint">เข้าสู่ระบบด้วยรหัสพนักงานและ PIN</p>
+  <form id="loginForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="on">
+    <label class="f">รหัสพนักงาน<input type="text" id="lEmp" required autocomplete="username" autocapitalize="characters"></label>
+    <label class="f">PIN<input type="password" id="lPin" class="pinin" inputmode="numeric" maxlength="6" required autocomplete="current-password"></label>
+    <p class="err" id="lErr">${esc(msg||'')}</p>
+    <button class="primary" type="submit" id="lBtn">เข้าสู่ระบบ</button>
+  </form>`);
+  const last=store.get('msc:emp');if(last){$('lEmp').value=last;setTimeout(()=>$('lPin').focus(),0)}else setTimeout(()=>$('lEmp').focus(),0);
+  $('loginForm').addEventListener('submit',async e=>{e.preventDefault();const emp=$('lEmp').value.trim(),pin=$('lPin').value.trim();
+    if(!emp||!pinOk(pin)){$('lErr').textContent='ใส่รหัสพนักงาน และ PIN ตัวเลข 6 หลัก';return}
+    $('lBtn').disabled=true;$('lErr').textContent='';
+    try{await AUTH.signInWithEmailAndPassword(empEmail(emp),pin);store.set('msc:emp',emp)}catch(err){$('lErr').textContent=authErr(err);$('lBtn').disabled=false}});
+}
+function setupView(){
+  authCard(`<p class="hint"><b>ตั้งค่าครั้งแรก:</b> สร้างบัญชีหัวหน้า (Admin) คนแรก หลังจากนี้หัวหน้าจะสร้างบัญชีให้ช่างจากหน้า "ผู้ใช้"</p>
+  <form id="setupForm" style="display:flex;flex-direction:column;gap:12px" autocomplete="off">
+    <label class="f">รหัสพนักงาน<input type="text" id="sEmp" required autocapitalize="characters"></label>
+    <label class="f">ชื่อที่แสดง<input type="text" id="sName" required></label>
+    <label class="f">PIN (ตัวเลข 6 หลัก)<input type="password" id="sPin" class="pinin" inputmode="numeric" maxlength="6" required autocomplete="new-password"></label>
+    <label class="f">ยืนยัน PIN<input type="password" id="sPin2" class="pinin" inputmode="numeric" maxlength="6" required autocomplete="new-password"></label>
+    <p class="err" id="sErr"></p>
+    <button class="primary" type="submit" id="sBtn">สร้างบัญชีหัวหน้า</button>
+  </form>`);
+  $('setupForm').addEventListener('submit',async e=>{e.preventDefault();const emp=$('sEmp').value.trim(),name=$('sName').value.trim(),pin=$('sPin').value.trim();
+    if(!emp||!name){$('sErr').textContent='ใส่รหัสพนักงานและชื่อ';return}
+    if(!pinOk(pin)){$('sErr').textContent='PIN ต้องเป็นตัวเลข 6 หลัก';return}
+    if(pin!==$('sPin2').value.trim()){$('sErr').textContent='PIN ยืนยันไม่ตรงกัน';return}
+    $('sBtn').disabled=true;$('sErr').textContent='';
+    try{S.bootstrapping={emp,name};const cred=await AUTH.createUserWithEmailAndPassword(empEmail(emp),pin);
+      const db=FB.firestore(),b=db.batch(),now=new Date().toISOString();
+      b.set(db.doc('users/'+cred.user.uid),{empId:emp,name,role:'admin',active:true,createdAt:now});
+      b.set(db.doc('config/bootstrap'),{by:cred.user.uid,at:now});
+      await b.commit();S.bootstrapping=null;store.set('msc:emp',emp);startSession(cred.user)}
+    catch(err){S.bootstrapping=null;$('sErr').textContent=authErr(err);$('sBtn').disabled=false}});
+}
+function stopSession(){unsubs.forEach(u=>{try{u()}catch(_){}});unsubs=[];
+  S.db=null;S.me=null;S.isAdmin=false;S.items=[];S.checks=[];S.stock=[];S.moves=[];S.users=[];S.loaded=false;S.loadedStock=false;
+  document.body.classList.remove('is-admin');['whoBox','pinBtn','logoutBtn'].forEach(id=>$(id).hidden=true);closeSheet();closeK();closeH();}
+async function startSession(user){
+  if(S.bootstrapping)return;
+  const db=FB.firestore();let snap;
+  try{snap=await db.doc('users/'+user.uid).get()}catch(err){snap=null}
+  const p=snap&&snap.exists?snap.data():null;
+  if(!p||p.active!==true){await AUTH.signOut();loginView(p?'บัญชีนี้ถูกปิดใช้งาน ติดต่อหัวหน้า':'ไม่พบข้อมูลผู้ใช้ ติดต่อหัวหน้า');return}
+  stopSession();
+  S.db=db;S.me={uid:user.uid,empId:p.empId,name:p.name,role:p.role};S.isAdmin=p.role==='admin';S.canWrite=true;
+  document.body.classList.toggle('is-admin',S.isAdmin);
+  $('whoName').textContent=p.name;$('whoRole').textContent=(S.isAdmin?'หัวหน้า':'ช่าง')+' · '+p.empId;['whoBox','pinBtn','logoutBtn'].forEach(id=>$(id).hidden=false);
+  ['cName','countBy','kBy'].forEach(id=>$(id).value=p.name);
+  $('authScreen').hidden=true;show((location.hash||'').slice(1));
+  const onErr=e=>{toast(e&&e.code==='permission-denied'?'ไม่มีสิทธิ์อ่านข้อมูล':'เชื่อมต่อฐานข้อมูลไม่ได้ ลองรีโหลดหน้า')};
+  unsubs.push(db.collection('items').onSnapshot(s=>{S.items=s.docs.map(d=>({id:d.id,...d.data()}));S.loaded=true;renderAll()},onErr));
+  unsubs.push(db.collection('checks').orderBy('day','desc').limit(60).onSnapshot(s=>{S.checks=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},onErr));
+  unsubs.push(db.doc('config/machines').onSnapshot(d=>{S.models=d.exists?{...d.data()}:{};applyModels()},onErr));
+  unsubs.push(db.collection('stock').onSnapshot(s=>{S.stock=s.docs.map(d=>({id:d.id,...d.data()}));S.loadedStock=true;renderStock()},onErr));
+  unsubs.push(db.collection('moves').orderBy('ts','desc').limit(1000).onSnapshot(s=>{S.moves=s.docs.map(d=>({id:d.id,...d.data()}));if(S.ksel)renderKSheet()},onErr));
+  unsubs.push(db.doc('users/'+user.uid).onSnapshot(d=>{const q=d.exists?d.data():null;if(!q||q.active!==true||q.role!==S.me.role){AUTH.signOut()}},()=>{}));
+  if(S.isAdmin)unsubs.push(db.collection('users').onSnapshot(s=>{S.users=s.docs.map(d=>({id:d.id,...d.data()}));renderUsers()},onErr));
+}
+
+/* users admin */
+const ROLE_TXT={tech:'ช่าง',admin:'หัวหน้า'};
+function renderUsers(){const us=[...(S.users||[])].sort((a,b)=>String(a.empId).localeCompare(String(b.empId),undefined,{numeric:true}));
+  $('userBody').innerHTML=us.length?us.map(u=>`<tr><td class="code">${esc(u.empId)}</td><td>${esc(u.name)}${u.id===S.me.uid?' <span class="pill mute">คุณ</span>':''}</td>
+    <td><select data-urole="${esc(u.id)}" ${u.id===S.me.uid?'disabled':''} aria-label="สิทธิ์ของ ${esc(u.name)}"><option value="tech"${u.role==='tech'?' selected':''}>ช่าง</option><option value="admin"${u.role==='admin'?' selected':''}>หัวหน้า</option></select></td>
+    <td>${u.id===S.me.uid?'<span class="pill good">ใช้งาน</span>':`<button class="small${u.active?'':' danger'}" type="button" data-uact="${esc(u.id)}">${u.active?'ใช้งาน · กดเพื่อปิด':'ปิดใช้งาน · กดเพื่อเปิด'}</button>`}</td></tr>`).join(''):`<tr><td colspan="4" class="empty">ยังไม่มีผู้ใช้</td></tr>`}
+$('userBody').addEventListener('change',e=>{const s=e.target.closest('[data-urole]');if(!s)return;const u=(S.users||[]).find(x=>x.id===s.dataset.urole);if(!u)return;
+  run(s,async()=>{await S.db.doc('users/'+u.id).update({role:s.value})},'เปลี่ยนสิทธิ์ '+u.name+' เป็น'+ROLE_TXT[s.value]+'แล้ว')});
+$('userBody').addEventListener('click',e=>{const b=e.target.closest('[data-uact]');if(!b)return;const u=(S.users||[]).find(x=>x.id===b.dataset.uact);if(!u)return;
+  run(b,async()=>{await S.db.doc('users/'+u.id).update({active:!u.active})},(u.active?'ปิดใช้งาน ':'เปิดใช้งาน ')+u.name+' แล้ว')});
+$('userForm').addEventListener('submit',e=>{e.preventDefault();const emp=$('uEmp').value.trim(),name=$('uName').value.trim(),pin=$('uPin').value.trim(),role=$('uRole').value;
+  if(!emp||!name){toast('ใส่รหัสพนักงานและชื่อ');return}
+  if(!pinOk(pin)){toast('PIN ต้องเป็นตัวเลข 6 หลัก');$('uPin').focus();return}
+  if((S.users||[]).some(u=>String(u.empId).toLowerCase()===emp.toLowerCase())){toast('รหัสพนักงาน '+emp+' มีบัญชีอยู่แล้ว');return}
+  run($('uSubmit'),async()=>{const sec=firebase.apps.find(a=>a.name==='secondary')||firebase.initializeApp(window.FIREBASE_CONFIG,'secondary');
+    let cred;try{cred=await sec.auth().createUserWithEmailAndPassword(empEmail(emp),pin)}catch(err){toast(authErr(err));throw {handled:true}}
+    await sec.auth().signOut();
+    await S.db.doc('users/'+cred.user.uid).set({empId:emp,name,role,active:true,createdAt:new Date().toISOString(),createdBy:S.me.uid});
+    $('userForm').reset()},'สร้างบัญชี '+name+' แล้ว · แจ้งรหัสพนักงานและ PIN ให้ผู้ใช้')});
+
+/* change own PIN */
+$('pinBtn').addEventListener('click',()=>{['pinOld','pinNew','pinNew2'].forEach(id=>$(id).value='');$('pinScrim').hidden=false;setTimeout(()=>$('pinOld').focus(),0)});
+$('pinClose').addEventListener('click',()=>{$('pinScrim').hidden=true});
+$('pinScrim').addEventListener('click',e=>{if(e.target===$('pinScrim'))$('pinScrim').hidden=true});
+$('pinSave').addEventListener('click',async()=>{const o=$('pinOld').value.trim(),n=$('pinNew').value.trim();
+  if(!pinOk(n)){toast('PIN ใหม่ต้องเป็นตัวเลข 6 หลัก');return}if(n!==$('pinNew2').value.trim()){toast('PIN ยืนยันไม่ตรงกัน');return}
+  const btn=$('pinSave');btn.disabled=true;
+  try{const u=AUTH.currentUser;await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email,o));await u.updatePassword(n);$('pinScrim').hidden=true;toast('เปลี่ยน PIN แล้ว')}
+  catch(err){toast(authErr(err))}finally{btn.disabled=false}});
+$('logoutBtn').addEventListener('click',()=>{AUTH.signOut()});
+
+/* import from old app */
+let importData=null;
+$('importFile').addEventListener('change',async e=>{const f=e.target.files[0];importData=null;$('importBtn').disabled=true;$('importInfo').textContent='';if(!f)return;
+  try{const d=JSON.parse(await f.text());const c=k=>Object.keys(d[k]||{}).length;
+    if(!d.items&&!d.stock)throw new Error('bad');importData=d;
+    $('importInfo').textContent=`พบข้อมูล: เครื่องมือ ${c('items')} · สต็อก ${c('stock')} · ความเคลื่อนไหว ${c('moves')} · ผลตรวจ ${c('checks')} · ตั้งค่า ${c('config')}`;$('importBtn').disabled=false}
+  catch(_){$('importInfo').textContent='ไฟล์นี้ไม่ใช่ไฟล์ข้อมูลจากแอปเดิม'}});
+$('importBtn').addEventListener('click',()=>{if(!importData)return;
+  run($('importBtn'),async()=>{const db=S.db;let b=db.batch(),n=0,total=0;
+    for(const col of ['items','stock','moves','checks','config']){for(const [id,data] of Object.entries(importData[col]||{})){if(col==='config'&&id==='bootstrap')continue;
+      b.set(db.doc(col+'/'+id),data);n++;total++;if(n>=400){await b.commit();b=db.batch();n=0}}}
+    if(n)await b.commit();$('importFile').value='';importData=null;$('importInfo').textContent='นำเข้าแล้ว '+total+' รายการ'},'นำเข้าข้อมูลแล้ว')});
+
+/* boot */
 (async()=>{
-  const db=await window.claude?.use?.('db');
-  if(!db){const b=$('dbBanner');b.hidden=false;b.textContent='มุมมองนี้เชื่อมต่อฐานข้อมูลไม่ได้ เปิดหน้านี้จาก claude.ai ขณะลงชื่อเข้าใช้ เพื่อบันทึกและดูข้อมูลร่วมกัน';S.loaded=true;S.loadedStock=true;renderAll();return}
-  S.db=db;
-  try{const user=await window.claude.use('user');const w=user?await user.can('data.write'):null;if(w===false){S.canWrite=false;const b=$('dbBanner');b.hidden=false;b.textContent='บัญชีนี้ดูข้อมูลได้อย่างเดียว ขอสิทธิ์ Contributor จากเจ้าของหน้า เพื่อบันทึกได้'}}catch(_){}
-  const onErr=e=>{if(e&&e.code==='revoked'){const b=$('dbBanner');b.hidden=false;b.textContent='สิทธิ์เข้าถึงข้อมูลถูกเปลี่ยน รีโหลดหน้าเพื่อเชื่อมต่อใหม่'}};
-  db.collection('items').onSnapshot(s=>{S.items=s.docs.map(d=>({id:d.id,...d.data()}));S.loaded=true;renderAll()},onErr);
-  db.collection('checks').orderBy('day','desc').limit(60).onSnapshot(s=>{S.checks=s.docs.map(d=>({id:d.id,...d.data()}));renderAll()},onErr);
-  db.doc('config/machines').onSnapshot(d=>{S.models=d.exists?{...d.data()}:{};applyModels()},onErr);
-  db.collection('stock').onSnapshot(s=>{S.stock=s.docs.map(d=>({id:d.id,...d.data()}));S.loadedStock=true;renderStock()},onErr);
-  db.collection('moves').orderBy('ts','desc').limit(1000).onSnapshot(s=>{S.moves=s.docs.map(d=>({id:d.id,...d.data()}));if(S.ksel)renderKSheet()},onErr);
+  const cfg=window.FIREBASE_CONFIG;
+  if(!window.firebase||!cfg||!cfg.apiKey||/YOUR_/.test(cfg.apiKey)){
+    authCard(`<p class="err">ยังไม่ได้ตั้งค่า Firebase</p><p class="hint">แก้ไฟล์ <span class="code">firebase-config.js</span> ใส่ค่าจากโปรเจกต์ Firebase ตามขั้นตอนใน README แล้วรีโหลดหน้านี้</p>`);return}
+  FB=firebase.initializeApp(cfg);AUTH=FB.auth();
+  AUTH.onAuthStateChanged(async user=>{
+    if(user){startSession(user);return}
+    stopSession();
+    try{const b=await FB.firestore().doc('config/bootstrap').get();if(!b.exists){setupView();return}}catch(_){}
+    loginView();
+  });
 })();
 </script>
-
-</body></html>
+</body>
+</html>
