@@ -34,6 +34,7 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 .brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:12px 6px}
 .brand h1{font-family:var(--f-display);font-weight:600;font-size:1.25rem;letter-spacing:.01em;margin:0;text-wrap:balance}
 .brand h1 span{color:var(--accent)}
+.titlebox{display:flex;flex-direction:column;gap:2px;min-width:0}
 .brand .date{font-family:var(--f-mono);font-size:.82rem;color:var(--muted)}
 nav.tabs{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
@@ -232,8 +233,7 @@ table.users select{width:auto;padding:4px 8px}
 <header class="top">
   <div class="wrap">
     <div class="brand">
-      <h1>Machine Shop <span>Control Board</span></h1>
-      <div class="userbox"><div class="date" id="today"></div><div class="who" id="whoBox" hidden><b id="whoName"></b><span id="whoRole"></span></div><button class="small" type="button" id="pinBtn" hidden>เปลี่ยน PIN</button><button class="small" type="button" id="logoutBtn" hidden>ออกจากระบบ</button></div>
+      <div class="titlebox"><h1>Machine Shop <span>Control Board</span></h1><div class="date" id="today"></div></div><div class="userbox"><div class="who" id="whoBox" hidden><b id="whoName"></b><span id="whoRole"></span></div><button class="small" type="button" id="pinBtn" hidden>เปลี่ยน PIN</button><button class="small" type="button" id="logoutBtn" hidden>ออกจากระบบ</button></div>
     </div>
     <nav class="tabs" aria-label="เมนู">
       <a href="#stock" data-tab="stock"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4zm0 0v10l9 4 9-4V7M12 11v10"/></svg>สต็อก <span class="badge" id="badgeReorder" hidden></span></a>
